@@ -1,6 +1,8 @@
 #ifndef AGENT_H_
 #define AGENT_H_
 
+#include "State.h"
+
 // The action retruned will be an index into a the AI's action list
 // Not sure if this is the best way to set this up, but each AI type
 // will have a separate list of actions. For the sake of abastraction,

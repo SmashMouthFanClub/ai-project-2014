@@ -1,7 +1,8 @@
 #ifndef ADVERSARYCAR_H_
 #define ADVERSARYCAR_H_
 
-#include "AI.h"
+#include "State.h"
+#include "Agent.h"
 
 class AdversaryCar : public Agent {
 public:

@@ -1,7 +1,7 @@
 #ifndef DUMBCAR_H_
 #define DUMBCAR_H_
 
-#include "AI.h"
+#include "State.h"
 #include "ReflexAgent.h"
 
 class DumbCar : public ReflexAgent {

@@ -1,5 +1,5 @@
-#include "AI.h"
 #include "State.h"
+#include "AI.h"
 
 State *AI::generateState(void *info)
 {
