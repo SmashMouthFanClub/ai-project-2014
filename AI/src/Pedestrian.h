@@ -1,7 +1,8 @@
 #ifndef PEDESTRIAN_H_
 #define PEDESTRIAN_H_
 
-#include "AI.h"
+#include "State.h"
+#include "ReflexAgent.h"
 
 class Pedestrian : public ReflexAgent {
 public:
