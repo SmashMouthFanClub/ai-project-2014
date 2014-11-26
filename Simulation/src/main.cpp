@@ -1,9 +1,13 @@
 #include <iostream>
-#include "AStarMap.h"
+#include "Game.h"
 
 int main(int argc, char **argv) {
-	AStarMap a = {argv[1]};
-	a.getDistanceFromPath(WorldPos(1, 1, 1, 1));
+	Game a(400, 300);
+
+	std::cout << a.GetViewWidth() << std::endl;
+
+	while (a.Tick()) {
+	}
 
 	return 0;
 }

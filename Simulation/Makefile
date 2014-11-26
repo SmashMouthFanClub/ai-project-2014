@@ -1,17 +1,18 @@
 CC = g++ -std=c++11 -I include
 CFLAGS = -Wall
+LINK = -lOgreMain -lOIS -lboost_system
 
-all: main.o Simulation.o AStarMap.o
-	$(CC) $(CFLAGS) bin/*.o -o bin/sim
+all: main.o Game.o GameWorld.o
+	$(CC) $(CFLAGS) bin/*.o -o bin/Simulation $(LINK)
 
 main.o: src/main.cpp
 	$(CC) $(CFLAGS) -c src/main.cpp -o bin/main.o
 
-Simulation.o: src/Simulation.cpp include/Simulation.h
-	$(CC) $(CFLAGS) -c src/Simulation.cpp -o bin/Simulation.o
+Game.o: src/Game.cpp include/Game.h
+	$(CC) $(CFLAGS) -c src/Game.cpp -o bin/Game.o
 
-AStarMap.o: src/AStarMap.cpp include/AStarMap.h
-	$(CC) $(CFLAGS) -c src/AStarMap.cpp -o bin/AStarMap.o
+GameWorld.o: src/GameWorld.cpp include/GameWorld.h
+	$(CC) $(CFLAGS) -c src/GameWorld.cpp -o bin/GameWorld.o
 
 clean:
-	rm bin/sim bin/*.o
+	rm -f bin/Simulation bin/*.o
