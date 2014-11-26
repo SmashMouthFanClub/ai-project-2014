@@ -3,6 +3,8 @@
 
 #include <OGRE/Ogre.h>
 
+class GameWorld;
+
 class GameObject
 {
 
@@ -17,7 +19,7 @@ class GameObject
 
 public:
 
-	GameObject(std::string meshName, double turn, double forward, double backward);
+	GameObject(GameWorld& gw, std::string meshName, double turn, double forward, double backward);
 
 	void SetX(double x);
 	void SetY(double y);

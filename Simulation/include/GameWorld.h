@@ -11,13 +11,19 @@
 
 class Game;
 
+struct Camera
+{
+	Ogre::Camera *m_camera;
+	Ogre::SceneNode *m_node;
+};
+
 class GameWorld
 {
 
 	Game& m_game;
 	Ogre::SceneManager *m_scene;
 	std::map<std::string, Ogre::Mesh*> m_meshes;
-	std::vector<Ogre::Camera*> m_cameras;
+	std::vector<Camera> m_cameras;
 	std::vector<GameObject> m_objects;
 
 public:
@@ -25,6 +31,9 @@ public:
 	GameWorld(Game& game, std::string sceneName);
 
 	bool Update();
+
+	Ogre::SceneManager *GetScene();
+	Ogre::Mesh *GetMesh(std::string meshName);
 
 };
 
