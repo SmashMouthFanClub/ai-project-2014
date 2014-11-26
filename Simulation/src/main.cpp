@@ -6,8 +6,7 @@ int main(int argc, char **argv) {
 
 	std::cout << a.GetViewWidth() << std::endl;
 
-	while (a.Tick()) {
-	}
+	while (a.Tick());
 
 	return 0;
 }
