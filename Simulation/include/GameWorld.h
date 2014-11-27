@@ -4,21 +4,36 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 #include <OGRE/Ogre.h>
+
+#include "GameObject.h"
 
 class Game;
 
-class GameWorld {
+struct Camera
+{
+	Ogre::Camera *m_camera;
+	Ogre::SceneNode *m_node;
+};
+
+class GameWorld
+{
 
 	Game& m_game;
-	std::map<std::string, Ogre::Mesh*> m_meshes;
-	std::vector<Ogre::Camera*> m_cameras;
+	Ogre::SceneManager *m_scene;
+	std::map<std::string, Ogre::MeshPtr> m_meshes;
+	std::vector<Camera> m_cameras;
+	std::vector<GameObject> m_objects;
 
 public:
 
-	GameWorld(Game& game);
+	GameWorld(Game& game, std::string sceneName);
 
 	bool Update();
+
+	Ogre::SceneManager *GetScene();
+	Ogre::MeshPtr GetMesh(std::string meshName);
 
 };
 

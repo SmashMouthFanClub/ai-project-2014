@@ -5,13 +5,14 @@
 #include <OGRE/Ogre.h>
 #include "GameWorld.h"
 
-class Game {
+class Game
+{
 
 	std::auto_ptr<Ogre::Root> m_root;
 	Ogre::RenderWindow *m_window;
 	Ogre::Viewport *m_viewport;
 
-	GameWorld m_gw;
+	std::auto_ptr<GameWorld> m_gw;
 
 public:
 

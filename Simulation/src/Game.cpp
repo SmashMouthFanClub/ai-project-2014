@@ -2,7 +2,8 @@
 #include <iostream>
 #include "Game.h"
 
-Game::Game(int w, int h) : m_window(nullptr), m_viewport(nullptr), m_gw(*this) {
+Game::Game(int w, int h) : m_window(nullptr), m_viewport(nullptr)
+{
 	// create OGRE root object
 	m_root = std::auto_ptr<Ogre::Root>(new Ogre::Root("plugins.cfg", "", "logs"));
 
@@ -23,13 +24,17 @@ Game::Game(int w, int h) : m_window(nullptr), m_viewport(nullptr), m_gw(*this) {
 	m_window = m_root->createRenderWindow("Test Window", w, h, false, &params);
 	m_window->setActive(true);
 	m_window->setAutoUpdated(false);
+
+	m_gw = std::auto_ptr<GameWorld>(new GameWorld(*this, "GameWorld"));
 }
 
-Game::~Game() {
+Game::~Game()
+{
 }
 
-bool Game::Tick() {
-	if (!m_gw.Update()) {
+bool Game::Tick()
+{
+	if (!m_gw->Update()) {
 		return false;
 	}
 
@@ -42,28 +47,36 @@ bool Game::Tick() {
 	return !m_window->isClosed();
 }
 
-void Game::SetCamera(Ogre::Camera *camera) {
+void Game::SetCamera(Ogre::Camera *camera)
+{
 	m_viewport = m_window->addViewport(camera);
+	camera->setAspectRatio(GetViewWidth() / GetViewHeight());
+	m_viewport->setAutoUpdated(true);
+	m_viewport->setBackgroundColour(Ogre::ColourValue(1, 0, 1));
 }
 
-int Game::GetViewWidth() {
+int Game::GetViewWidth()
+{
 	if (m_viewport != nullptr) {
 		return m_viewport->getActualWidth();
 	}
 	return -1;
 }
 
-int Game::GetViewHeight() {
+int Game::GetViewHeight()
+{
 	if (m_viewport != nullptr) {
 		return m_viewport->getActualHeight();
 	}
 	return -1;
 }
 
-Ogre::Root *Game::GetRenderer() {
+Ogre::Root *Game::GetRenderer()
+{
 	return m_root.get();
 }
 
-Ogre::RenderWindow *Game::GetWindow() {
+Ogre::RenderWindow *Game::GetWindow()
+{
 	return m_window;
 }

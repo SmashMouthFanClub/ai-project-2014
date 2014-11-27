@@ -2,12 +2,9 @@
 #include "Game.h"
 
 int main(int argc, char **argv) {
-	Game a(400, 300);
+	Game a(800, 600);
 
-	std::cout << a.GetViewWidth() << std::endl;
-
-	while (a.Tick()) {
-	}
+	while (a.Tick());
 
 	return 0;
 }
