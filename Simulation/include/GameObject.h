@@ -15,6 +15,7 @@ class GameObject
 	const double m_maxTurn;
 	const double m_maxForward;
 	const double m_maxBackward;
+	
 	double m_x, m_y, m_z;
 
 public:

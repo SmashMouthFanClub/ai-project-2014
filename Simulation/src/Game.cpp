@@ -50,6 +50,9 @@ bool Game::Tick()
 void Game::SetCamera(Ogre::Camera *camera)
 {
 	m_viewport = m_window->addViewport(camera);
+	camera->setAspectRatio(GetViewWidth() / GetViewHeight());
+	m_viewport->setAutoUpdated(true);
+	m_viewport->setBackgroundColour(Ogre::ColourValue(1, 0, 1));
 }
 
 int Game::GetViewWidth()

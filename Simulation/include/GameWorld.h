@@ -22,7 +22,7 @@ class GameWorld
 
 	Game& m_game;
 	Ogre::SceneManager *m_scene;
-	std::map<std::string, Ogre::Mesh*> m_meshes;
+	std::map<std::string, Ogre::MeshPtr> m_meshes;
 	std::vector<Camera> m_cameras;
 	std::vector<GameObject> m_objects;
 
@@ -33,7 +33,7 @@ public:
 	bool Update();
 
 	Ogre::SceneManager *GetScene();
-	Ogre::Mesh *GetMesh(std::string meshName);
+	Ogre::MeshPtr GetMesh(std::string meshName);
 
 };
 
