@@ -1,6 +1,6 @@
 CC = g++ -std=c++11 -I include
 CFLAGS = -Wall
-LINK = -lOgreMain -lOIS -lboost_system
+LINK = -lOgreMain -lOIS -lboost_system -lode -lpthread
 
 all: main.o Game.o GameWorld.o GameObject.o
 	$(CC) $(CFLAGS) bin/*.o -o bin/Simulation $(LINK)

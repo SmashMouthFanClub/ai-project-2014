@@ -2,29 +2,61 @@
 #define _SIM_GAMEOBJECT_H
 
 #include <OGRE/Ogre.h>
+#include <ode/ode.h>
 
 class GameWorld;
 
+struct ObjectPrototype {
+	std::string m_meshName;
+	double m_maxTurnAngle;
+	double m_maxForward;
+	double m_maxBackward;
+	double m_maxHitPoints;
+	double m_density;
+};
+
+const ObjectPrototype CarPrototype = {
+	"CarBox",
+	30, 80, 20,
+	1000,
+	20
+};
+
+const ObjectPrototype PedPrototype = {
+	"PedBox",
+	180, 2, 2,
+	70,
+	1
+};
+
+const ObjectPrototype BuildingPrototype = {
+	"BuildingBox",
+	0, 0, 0,
+	1000000000,
+	1000000000
+};
+
 class GameObject
 {
-
-	const std::string m_mesh;
+	// rendering stuff
+	const std::string m_meshName;
 	Ogre::Entity *m_sceneEntity;
 	Ogre::SceneNode *m_sceneNode;
 
+	// physics stuff
+	dBodyID m_body;
+	dGeomID m_geom;
+	dMass m_mass;
+
+	// game sim stuff
 	const double m_maxTurn;
 	const double m_maxForward;
 	const double m_maxBackward;
-	
-	double m_x, m_y, m_z;
+	double m_hitPoints;
 
 public:
 
-	GameObject(GameWorld& gw, std::string meshName, double turn, double forward, double backward);
-
-	void SetX(double x);
-	void SetY(double y);
-	void SetZ(double z);
+	GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, double y, double z);
 
 	void Update();
 	void Render();
