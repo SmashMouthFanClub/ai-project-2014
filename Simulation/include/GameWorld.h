@@ -6,6 +6,7 @@
 #include <map>
 #include <memory>
 #include <OGRE/Ogre.h>
+#include <ode/ode.h>
 
 #include "GameObject.h"
 
@@ -19,21 +20,31 @@ struct Camera
 
 class GameWorld
 {
-
+	// game data stuff
 	Game& m_game;
+	std::vector<GameObject> m_objects;
+
+	// rendering member variables
 	Ogre::SceneManager *m_scene;
 	std::map<std::string, Ogre::MeshPtr> m_meshes;
 	std::vector<Camera> m_cameras;
-	std::vector<GameObject> m_objects;
+
+	// physics member variables
+	dWorldID m_world;
+	dSpaceID m_space;
 
 public:
 
 	GameWorld(Game& game, std::string sceneName);
+	~GameWorld();
 
 	bool Update();
 
 	Ogre::SceneManager *GetScene();
 	Ogre::MeshPtr GetMesh(std::string meshName);
+
+	dWorldID GetPhysicsWorld();
+	dSpaceID GetPhysicsSpace();
 
 };
 

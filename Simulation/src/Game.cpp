@@ -1,11 +1,15 @@
 #include <cstdlib>
 #include <iostream>
+#include <ode/ode.h>
 #include "Game.h"
 
 Game::Game(int w, int h) : m_window(nullptr), m_viewport(nullptr)
 {
 	// create OGRE root object
 	m_root = std::auto_ptr<Ogre::Root>(new Ogre::Root("plugins.cfg", "", "logs"));
+
+	// initialize physics
+	dInitODE();
 
 	// set the root's render system
 	const Ogre::RenderSystemList& renderSystems = m_root->getAvailableRenderers();
@@ -30,6 +34,7 @@ Game::Game(int w, int h) : m_window(nullptr), m_viewport(nullptr)
 
 Game::~Game()
 {
+	dCloseODE();
 }
 
 bool Game::Tick()
@@ -38,8 +43,8 @@ bool Game::Tick()
 		return false;
 	}
 
-	m_window->update(false);
-	m_window->swapBuffers();
+	m_window->update(true);
+	//m_window->swapBuffers();
 
 	m_root->renderOneFrame();
 

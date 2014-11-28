@@ -14,7 +14,7 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 
 	// create a camera
 	Ogre::Camera *camera = m_scene->createCamera("PrimaryCamera");
-	camera->setNearClipDistance(0.5f);
+	camera->setNearClipDistance(2.0f);
 	camera->setFarClipDistance(1000.f);
 	Ogre::SceneNode *cameraNode = m_scene->getRootSceneNode()->createChildSceneNode("PrimaryCameraNode");
 	cameraNode->attachObject(camera);
@@ -23,30 +23,40 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 	cameraNode->setPosition(Ogre::Vector3(100, 100, 100));
 	camera->lookAt(Ogre::Vector3(0, 0, 0));
 
+	// create physics stuff
+	m_world = dWorldCreate();
+	m_space = dHashSpaceCreate(0);
+	dWorldSetGravity(m_world, 0, -9.81f, 0);
+	dWorldSetCFM(m_world, 1e-5);
+	dCreatePlane(m_space, 1, 1, 1, 0);
+
 	// create some cars
-	for (int i = 0; i < 10; ++i) {
-		m_objects.push_back(GameObject(*this, "CarBox", 30, 80, 20));
-		m_objects.back().SetX(i * 5);
-		m_objects.back().SetY(i * 5);
+	for (int i = 0; i < 25; ++i) {
+		m_objects.push_back(GameObject(*this, CarPrototype, (i % 5) * 10.f, 2, (i / 5) * 10.f));
 	}
 
 	// create some pedestrians
 	for (int i = 0; i < 10; ++i) {
-		m_objects.push_back(GameObject(*this, "PedBox", 180, 2, 2));
-		m_objects.back().SetX(50 - i * 5);
-		m_objects.back().SetY(50 - i * 5);
+		m_objects.push_back(GameObject(*this, PedPrototype, i * 5, 2, 45 - i * 5));
 	}
+}
+
+GameWorld::~GameWorld()
+{
+	dSpaceDestroy(m_space);
+	dWorldDestroy(m_world);
 }
 
 bool GameWorld::Update()
 {
-	for (auto object : m_objects) {
+	for (auto& object : m_objects) {
 		object.Update();
 	}
 
 	// simulate physics
+	dWorldQuickStep(m_world, 0.01666f);
 
-	for (auto object : m_objects) {
+	for (auto& object : m_objects) {
 		object.Render();
 	}
 
@@ -61,6 +71,16 @@ Ogre::SceneManager *GameWorld::GetScene()
 Ogre::MeshPtr GameWorld::GetMesh(std::string meshName)
 {
 	return m_meshes[meshName];
+}
+
+dWorldID GameWorld::GetPhysicsWorld()
+{
+	return m_world;
+}
+
+dSpaceID GameWorld::GetPhysicsSpace()
+{
+	return m_space;
 }
 
 Ogre::MeshPtr CreateBox(Ogre::SceneManager *scene, Ogre::String name, double w, double h, double d, Ogre::ColourValue color)
