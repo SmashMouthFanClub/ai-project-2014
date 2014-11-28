@@ -14,7 +14,7 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 
 	// create a camera
 	Ogre::Camera *camera = m_scene->createCamera("PrimaryCamera");
-	camera->setNearClipDistance(0.5f);
+	camera->setNearClipDistance(2.0f);
 	camera->setFarClipDistance(1000.f);
 	Ogre::SceneNode *cameraNode = m_scene->getRootSceneNode()->createChildSceneNode("PrimaryCameraNode");
 	cameraNode->attachObject(camera);
@@ -24,29 +24,29 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 	camera->lookAt(Ogre::Vector3(0, 0, 0));
 
 	// create some cars
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 25; ++i) {
 		m_objects.push_back(GameObject(*this, "CarBox", 30, 80, 20));
-		m_objects.back().SetX(i * 5);
-		m_objects.back().SetY(i * 5);
+		m_objects.back().SetX((i % 5) * 10.f);
+		m_objects.back().SetZ((i / 5) * 10.f);
 	}
 
 	// create some pedestrians
 	for (int i = 0; i < 10; ++i) {
 		m_objects.push_back(GameObject(*this, "PedBox", 180, 2, 2));
-		m_objects.back().SetX(50 - i * 5);
-		m_objects.back().SetY(50 - i * 5);
+		m_objects.back().SetX(i * 5);
+		m_objects.back().SetZ(45 - i * 5);
 	}
 }
 
 bool GameWorld::Update()
 {
-	for (auto object : m_objects) {
+	for (auto& object : m_objects) {
 		object.Update();
 	}
 
 	// simulate physics
 
-	for (auto object : m_objects) {
+	for (auto& object : m_objects) {
 		object.Render();
 	}
 

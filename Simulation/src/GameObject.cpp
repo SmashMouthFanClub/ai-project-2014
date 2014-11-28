@@ -10,8 +10,6 @@ GameObject::GameObject(GameWorld& gw, std::string meshName, double turn, double 
 	m_sceneEntity = gw.GetScene()->createEntity(gw.GetMesh(meshName));
 	m_sceneNode = gw.GetScene()->getRootSceneNode()->createChildSceneNode();
 	m_sceneNode->attachObject(m_sceneEntity);
-
-	std::cout << m_sceneNode->getAttachedObject(0)->getBoundingBox().getSize() << std::endl;
 }
 
 void GameObject::SetX(double x)
@@ -32,7 +30,7 @@ void GameObject::SetZ(double z)
 void GameObject::Update()
 {
 	Action a = {0.2, 0.5};	// dummy event, will use later
-	m_x += 0.02f;
+	m_x += 0.5f;
 }
 
 void GameObject::Render()

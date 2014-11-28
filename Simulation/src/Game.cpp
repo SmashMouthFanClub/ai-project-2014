@@ -38,8 +38,8 @@ bool Game::Tick()
 		return false;
 	}
 
-	m_window->update(false);
-	m_window->swapBuffers();
+	m_window->update(true);
+	//m_window->swapBuffers();
 
 	m_root->renderOneFrame();
 
