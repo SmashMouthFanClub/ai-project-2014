@@ -32,6 +32,7 @@ class GameWorld
 	// physics member variables
 	dWorldID m_world;
 	dSpaceID m_space;
+	dJointGroupID m_group;
 
 public:
 
