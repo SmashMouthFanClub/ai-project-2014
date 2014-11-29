@@ -4,6 +4,14 @@
 #include "GameWorld.h"
 
 Ogre::MeshPtr CreateBox(Ogre::SceneManager *scene, Ogre::String name, double w, double h, double d, Ogre::ColourValue color);
+Ogre::MeshPtr CreatePlane(Ogre::SceneManager *scene, Ogre::String name, double x, double y, Ogre::ColourValue color);
+
+void NearCollideCallback(void *data, dGeomID o1, dGeomID o2);
+
+struct NearCol {
+	dWorldID m_world;
+	dJointGroupID m_group;
+};
 
 GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(nullptr)
 {
@@ -11,6 +19,7 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 
 	m_meshes["CarBox"] = CreateBox(m_scene, "CarBox", 2.0f, 1.5f, 4.0f, Ogre::ColourValue(0.25f, 0.25f, 0.80f));
 	m_meshes["PedBox"] = CreateBox(m_scene, "PedBox", 0.5f, 2.0f, 0.5f, Ogre::ColourValue(0.80f, 0.25f, 0.25f));
+	m_meshes["Ground"] = CreatePlane(m_scene, "Ground", 500, 500, Ogre::ColourValue(0.25f, 0.70f, 0.25f));
 
 	// create a camera
 	Ogre::Camera *camera = m_scene->createCamera("PrimaryCamera");
@@ -23,12 +32,20 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 	cameraNode->setPosition(Ogre::Vector3(100, 100, 100));
 	camera->lookAt(Ogre::Vector3(0, 0, 0));
 
+	// create the ground
+	Ogre::Entity *ground = m_scene->createEntity(GetMesh("Ground"));
+	Ogre::SceneNode *groundNode = m_scene->getRootSceneNode()->createChildSceneNode();
+	groundNode->attachObject(ground);
+	groundNode->setPosition(Ogre::Vector3(0, 0, 0));
+
 	// create physics stuff
 	m_world = dWorldCreate();
 	m_space = dHashSpaceCreate(0);
+	m_group = dJointGroupCreate(0);
 	dWorldSetGravity(m_world, 0, -9.81f, 0);
 	dWorldSetCFM(m_world, 1e-5);
-	dCreatePlane(m_space, 1, 1, 1, 0);
+	dCreatePlane(m_space, 0, 1, 0, 0);
+
 
 	// create some cars
 	for (int i = 0; i < 25; ++i) {
@@ -43,8 +60,8 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 
 GameWorld::~GameWorld()
 {
-	dSpaceDestroy(m_space);
-	dWorldDestroy(m_world);
+	//dSpaceDestroy(m_space);
+	//dWorldDestroy(m_world);
 }
 
 bool GameWorld::Update()
@@ -54,13 +71,42 @@ bool GameWorld::Update()
 	}
 
 	// simulate physics
+	NearCol nc;
+	nc.m_world = m_world;
+	nc.m_group = m_group;
+
+	dSpaceCollide(m_space, (void*) &nc, &NearCollideCallback);
 	dWorldQuickStep(m_world, 0.01666f);
+	dJointGroupEmpty(m_group);
 
 	for (auto& object : m_objects) {
 		object.Render();
 	}
 
 	return true;
+}
+
+void NearCollideCallback(void *data, dGeomID o1, dGeomID o2)
+{
+	dWorldID world = ((NearCol*) data)->m_world;
+	dJointGroupID group = ((NearCol*) data)->m_group;
+
+	dBodyID b1 = dGeomGetBody(o1);
+	dBodyID b2 = dGeomGetBody(o2);
+	dContact contact;
+
+	contact.surface.mode = dContactBounce | dContactSoftCFM;
+	contact.surface.mu = dInfinity;
+	contact.surface.bounce = 0;
+	contact.surface.bounce_vel = 0.1;
+	contact.surface.soft_cfm = 0.001;
+
+	int numcol = dCollide(o1, o2, 1, &contact.geom, sizeof(dContact));
+
+	if (numcol > 0) {
+		dJointID j = dJointCreateContact(world, group, &contact);
+		dJointAttach(j, b1, b2);
+	}
 }
 
 Ogre::SceneManager *GameWorld::GetScene()
@@ -120,6 +166,29 @@ Ogre::MeshPtr CreateBox(Ogre::SceneManager *scene, Ogre::String name, double w, 
 		temp->triangle(7,0,3);
 		temp->triangle(1,5,6);
 		temp->triangle(6,2,1);	
+	}
+	temp->end();
+	return temp->convertToMesh(name);
+}
+
+Ogre::MeshPtr CreatePlane(Ogre::SceneManager *scene, Ogre::String name, double x, double y, Ogre::ColourValue color)
+{
+	Ogre::ManualObject *temp = scene->createManualObject(name);
+	temp->setDynamic(false);
+
+	temp->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
+	{
+		temp->position( x,  0,  y);
+		temp->colour(color);
+		temp->position(-x,  0,  y);
+		temp->colour(color);
+		temp->position(-x,  0, -y);
+		temp->colour(color);
+		temp->position( x,  0, -y);
+		temp->colour(color);
+
+		temp->triangle(0,2,1);
+		temp->triangle(0,3,2);
 	}
 	temp->end();
 	return temp->convertToMesh(name);

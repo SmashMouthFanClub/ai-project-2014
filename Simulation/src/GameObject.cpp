@@ -25,11 +25,13 @@ GameObject::GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, do
 void GameObject::Update()
 {
 	Action a = {0.2, 0.5};	// dummy event, will use later
-	//m_x += 0.5f;
+	dBodyAddForce(m_body, a.m_accelerateMagnitude * m_maxForward, 0, 0);
 }
 
 void GameObject::Render()
 {
 	const dReal *pos = dBodyGetPosition(m_body);
+	const dReal *rot = dBodyGetQuaternion(m_body);
 	m_sceneNode->setPosition(Ogre::Vector3(pos[0], pos[1], pos[2]));
+	m_sceneNode->setOrientation(Ogre::Quaternion(rot[0], rot[1], rot[2], rot[3]));
 }

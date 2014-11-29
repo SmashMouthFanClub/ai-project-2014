@@ -17,14 +17,14 @@ struct ObjectPrototype {
 
 const ObjectPrototype CarPrototype = {
 	"CarBox",
-	30, 80, 20,
+	30, 80000, 20000,
 	1000,
 	20
 };
 
 const ObjectPrototype PedPrototype = {
 	"PedBox",
-	180, 2, 2,
+	180, 80, 80,
 	70,
 	1
 };
