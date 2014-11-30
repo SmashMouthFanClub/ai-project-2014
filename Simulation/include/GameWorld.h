@@ -33,6 +33,7 @@ class GameWorld
 	dWorldID m_world;
 	dSpaceID m_space;
 	dJointGroupID m_group;
+	std::map<dBodyID, GameObject*> m_bodyToObject;
 
 public:
 
@@ -46,6 +47,9 @@ public:
 
 	dWorldID GetPhysicsWorld();
 	dSpaceID GetPhysicsSpace();
+	void RegisterForCollisions(GameObject *body);
+
+	static void NearCollideCallback(void *data, dGeomID o1, dGeomID o2);
 
 };
 

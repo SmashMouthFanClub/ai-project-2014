@@ -13,28 +13,14 @@ struct ObjectPrototype {
 	double m_maxBackward;
 	double m_maxHitPoints;
 	double m_density;
+	bool m_registerCollisions;
+	bool m_lockRotation;
+	bool m_isKinematic;
 };
 
-const ObjectPrototype CarPrototype = {
-	"CarBox",
-	30, 80000, 20000,
-	1000,
-	20
-};
-
-const ObjectPrototype PedPrototype = {
-	"PedBox",
-	180, 80, 80,
-	70,
-	1
-};
-
-const ObjectPrototype BuildingPrototype = {
-	"BuildingBox",
-	0, 0, 0,
-	1000000000,
-	1000000000
-};
+extern const ObjectPrototype CarPrototype;
+extern const ObjectPrototype PedPrototype;
+extern const ObjectPrototype BuildingPrototype;
 
 class GameObject
 {
@@ -47,6 +33,7 @@ class GameObject
 	dBodyID m_body;
 	dGeomID m_geom;
 	dMass m_mass;
+	bool m_lockRotation;
 
 	// game sim stuff
 	const double m_maxTurn;
@@ -60,6 +47,8 @@ public:
 
 	void Update();
 	void Render();
+
+	dBodyID GetPhysicsBody();
 
 };
 
