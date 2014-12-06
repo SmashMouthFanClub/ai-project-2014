@@ -48,6 +48,8 @@ public:
 	void Update();
 	void Render();
 
+	Ogre::Vector3 GetLocation();
+
 	dBodyID GetPhysicsBody();
 
 };
