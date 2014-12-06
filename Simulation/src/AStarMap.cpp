@@ -2,11 +2,67 @@
 #include <algorithm>
 #include <vector>
 #include <queue>
+#include <fstream>
+#include <sstream>
+
 #include "GameState.h"
 #include "AStarMap.h"
 
-AStarMap::AStarMap(const char *fileName) {
-	std::cout << fileName << std::endl;
+AStarMap::AStarMap(const char *fileName)
+{
+	std::ifstream inFile(fileName);
+
+	while (!inFile.eof()) {
+		std::string line;
+		std::getline(inFile, line);
+
+		//if (line.size() < 2) continue;
+		if (line == "#") break;
+
+		std::istringstream is(line);
+		double id, x, y;
+		is >> id;
+		is >> x;
+		is >> y;
+
+		WorldPos w = {x, y, 0};
+		m_nodes.push_back(w);
+	}
+
+	while (!inFile.eof()) {
+		std::string line;
+		std::getline(inFile, line);
+
+		//if (line.size() < 2) continue;
+
+		std::istringstream is(line);
+		double n1, n2;
+		is >> n1;
+		is >> n2;
+
+		if (m_adjacents.find(n1) == m_adjacents.end()) {
+			m_adjacents[n1] = std::vector<WorldPos>();
+		}
+
+		if (m_adjacents.find(n2) == m_adjacents.end()) {
+			m_adjacents[n2] = std::vector<WorldPos>();
+		}
+
+		WorldPos w1 = m_nodes[n1];
+		WorldPos w2 = m_nodes[n2];
+
+		m_adjacents[n1].push_back(w2);
+		m_adjacents[n2].push_back(w1);
+	}
+
+	for (auto& i : m_adjacents) {
+		WorldPos w = m_nodes[i.first];
+		std::cout << "(" << w.x << ", " << w.y << "): ";
+		for (auto& j : i.second) {
+			std::cout << "(" << j.x << ", " << j.y << "); ";
+		}
+		std::cout << std::endl << std::endl;
+	}
 }
 
 void AStarMap::makePath(WorldPos startPos, WorldPos endPos, std::vector<WorldPos> &outList) {
@@ -14,8 +70,11 @@ void AStarMap::makePath(WorldPos startPos, WorldPos endPos, std::vector<WorldPos
      std::priority_queue<Node *, std::vector<Node *>, CompareNode> unexplored;
      double totalDist = getDistance(startPos, endPos);
 
+	 std::vector<Node> nodePool;
+
      // Create start node to add to the unexplored set
-     Node *start = new Node();
+     nodePool.push_back(Node());
+     Node *start = &nodePool.back();
      start->parent = 0;
      start->pos = startPos;
      start->g = 0;
@@ -47,8 +106,9 @@ void AStarMap::makePath(WorldPos startPos, WorldPos endPos, std::vector<WorldPos
 	       // Calculate the h and g values and set up a child node for the sets
 	       double h = getDistance(*it, endPos);
 	       double g = top->g + getDistance(*it, top->pos);
-		    
-	       Node *child = new Node();
+		   
+		   nodePool.push_back(Node());
+	       Node *child = &nodePool.back();
 	       child->parent = top;
 	       child->pos = *it;
 	       child->g = g;
@@ -73,7 +133,7 @@ void AStarMap::makePath(WorldPos startPos, WorldPos endPos, std::vector<WorldPos
 
 	       // If we are not adding this one to the unexplored set, then delete it
 	       if (ignore) {
-		    delete child;
+		    //delete child;
 		    continue;
 	       }
 

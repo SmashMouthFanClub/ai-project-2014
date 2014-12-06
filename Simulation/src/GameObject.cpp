@@ -5,29 +5,29 @@
 
 const ObjectPrototype CarPrototype = {
 	"CarBox",
-	30, 40000, 10000,
-	1000, 20,
+	100000, 80000, 20000,
+	1000, 10,
 	true, false, false
 };
 
 const ObjectPrototype PedPrototype = {
 	"PedBox",
-	180, 0, 0,
+	0, 0, 0,
 	70,	1,
 	true, true, false
 };
 
 const ObjectPrototype BuildingPrototype = {
-	"BuildingBox",
+	"Building1",
 	0, 0, 0,
 	1000000000, 1000000000, 
 	false, true, true
 };
 
 GameObject::GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, double y, double z) :
-	m_meshName(proto.m_meshName), m_sceneEntity(nullptr), m_sceneNode(nullptr),	m_lockRotation(proto.m_lockRotation),
+	m_meshName(proto.m_meshName), m_sceneEntity(nullptr), m_sceneNode(nullptr),	m_lockRotation(proto.m_lockRotation), m_isKinematic(proto.m_isKinematic),
 	m_maxTurn(proto.m_maxTurnAngle), m_maxForward(proto.m_maxForward), m_maxBackward(proto.m_maxBackward),
-	m_hitPoints(proto.m_maxHitPoints)
+	m_hitPoints(proto.m_maxHitPoints), m_collisionAccum(0), m_totalDamage(0), m_gw(gw)
 {
 	m_sceneEntity = gw.GetScene()->createEntity(gw.GetMesh(m_meshName));
 	m_sceneNode = gw.GetScene()->getRootSceneNode()->createChildSceneNode();
@@ -62,33 +62,58 @@ GameObject::GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, do
 
 void GameObject::Update()
 {
-	Action a = {0.3, 1};	// dummy event, will use later
+	// construct the game state to pass to an agent
+	GameState gs;
 
-	// calculate magnitude of force vector
-	double forceMagnitude = a.m_accelerateMagnitude;
-	if (forceMagnitude > 0)
-		forceMagnitude *= m_maxForward;
-	else
-		forceMagnitude *= m_maxBackward;
+	gs.m_nearbyMoving = std::vector<WorldPos>();
+	gs.m_nearbyStatic = std::vector<WorldPos>();
 
-	// calculate angle of force vector
-	Ogre::Degree forceAngle(Ogre::Radian(a.m_turnMagnitude * m_maxTurn));
+	Ogre::Vector3 n = GetLocation();
+	for (auto& i : m_gw.m_objects) {
+		Ogre::Vector3 m = i.GetLocation();
 
-	// convert polar coordinates to x/y coordinates
-	double forward = Ogre::Math::Cos(forceAngle) * forceMagnitude;
-	double centripetal = Ogre::Math::Sin(forceAngle) * forceMagnitude;
+		double diffX = m.x - n.x;
+		double diffY = m.z - n.z;
+		double theta = Ogre::Math::ATan2(diffY, diffX).valueDegrees();
 
-	// get a rotation quaternion so we can do cool things with it
-	const dReal *oldRotation = dBodyGetQuaternion(m_body);
-	Ogre::Quaternion rotation = Ogre::Quaternion(oldRotation[0], oldRotation[1], oldRotation[2], oldRotation[3]);
+		if (i.m_isKinematic) {
+			gs.m_nearbyStatic.push_back(WorldPos {diffX, diffY, theta});
+		} else {
+			gs.m_nearbyMoving.push_back(WorldPos {diffX, diffY, theta});
+		}
+	}
 
-	// apply forces
-	Ogre::Vector3 force = rotation * Ogre::Vector3(forward, 0, centripetal);
-	dBodySetForce(m_body, -1 * force[2], 0, force[0]);
+	gs.m_distanceFromCenter = 0;
+	// I'll do this one later
 
-	// set the rotation of the object
-	Ogre::Vector3 angularVel = rotation * Ogre::Vector3(0, m_maxTurn * a.m_turnMagnitude * 0.1f, 0);
-	dBodySetAngularVel(m_body, 0, angularVel[1], 0);
+	gs.m_distanceFromDestination = 0;
+	gs.m_deviationAngle = 0;
+
+	if (m_pathToDest.size() != 0) {
+		WorldPos p = m_pathToDest.back();
+
+		double diffX = p.x - n.x;
+		double diffY = p.y - n.z;
+
+		gs.m_distanceFromDestination = Ogre::Math::Sqrt(Ogre::Math::Sqr(diffX) + Ogre::Math::Sqr(diffY));
+		gs.m_deviationAngle = Ogre::Math::ATan2(diffY, diffX).valueDegrees();
+	}
+
+	gs.m_damageSelfInstant = m_collisionAccum;
+	gs.m_damageSelfTotal = m_totalDamage;
+	gs.m_damageOthersInstant = 0; // yeah, not using this
+	gs.m_damageOthersTotal = 0; // ... or this
+
+	// layout: turn, acceleration
+	Action a = {1, 1};	// dummy event, will use later
+
+	// do physics things
+	dBodyAddRelForce(m_body, 0, 0, a.m_accelerateMagnitude * m_maxForward);
+	dBodyAddTorque(m_body, 0, a.m_turnMagnitude * m_maxTurn, 0);
+
+	// reset collision accumulator
+	m_totalDamage += m_collisionAccum;
+	m_collisionAccum = 0;
 }
 
 void GameObject::Render()
@@ -108,4 +133,9 @@ Ogre::Vector3 GameObject::GetLocation()
 dBodyID GameObject::GetPhysicsBody()
 {
 	return m_body;
+}
+
+void GameObject::RegisterCollision(double depth)
+{
+	m_collisionAccum += depth;
 }

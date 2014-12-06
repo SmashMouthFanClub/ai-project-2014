@@ -2,19 +2,22 @@
 
 #include "Game.h"
 #include "GameWorld.h"
+#include "AStarMap.h"
 
 Ogre::MeshPtr CreateBox(Ogre::SceneManager *scene, Ogre::String name, double w, double h, double d, Ogre::ColourValue color1, Ogre::ColourValue color2);
 Ogre::MeshPtr CreatePlane(Ogre::SceneManager *scene, Ogre::String name, double x, double y, Ogre::ColourValue color);
 
 void NearCollideCallback(void *data, dGeomID o1, dGeomID o2);
 
-GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(nullptr)
+GameWorld::GameWorld(Game& game, std::string sceneName) :
+	m_game(game), m_map("paths.txt"), m_scene(nullptr)
 {
 	m_scene = game.GetRenderer()->createSceneManager(Ogre::ST_GENERIC, sceneName);
 
 	m_meshes["CarBox"] = CreateBox(m_scene, "CarBox", 2.0f, 1.5f, 4.0f, Ogre::ColourValue(0.25f, 0.25f, 0.80f), Ogre::ColourValue(0.15f, 0.15f, 0.5f));
 	m_meshes["PedBox"] = CreateBox(m_scene, "PedBox", 0.5f, 2.0f, 0.5f, Ogre::ColourValue(0.80f, 0.25f, 0.25f), Ogre::ColourValue(0.5f, 0.15f, 0.15f));
 	m_meshes["Ground"] = CreatePlane(m_scene, "Ground", 500, 500, Ogre::ColourValue(0.25f, 0.70f, 0.25f));
+	m_meshes["Building1"] = CreateBox(m_scene, "Building1", 10.0f, 20.0f, 10.0f, Ogre::ColourValue(0.5f, 0.5f, 0.5f), Ogre::ColourValue(0.2f, 0.2f, 0.2f));
 
 	// create a camera
 	Ogre::Camera *camera = m_scene->createCamera("PrimaryCamera");
@@ -24,7 +27,7 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 	cameraNode->attachObject(camera);
 	m_cameras.push_back(Camera {camera, cameraNode});
 	game.SetCamera(camera);
-	cameraNode->setPosition(Ogre::Vector3(200, 100, 200));
+	cameraNode->setPosition(Ogre::Vector3(-100, 100, -100));
 	camera->lookAt(Ogre::Vector3(0, 0, 0));
 
 	// create the ground
@@ -53,6 +56,21 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 	for (int i = 0; i < 10; ++i) {
 		m_objects.push_back(GameObject(*this, PedPrototype, i * 5, 2, 45 - i * 5));
 	}
+
+	m_objects.push_back(GameObject(*this, BuildingPrototype, 50, 20, 50));
+	m_objects.push_back(GameObject(*this, BuildingPrototype, 100, 20, 50));
+	m_objects.push_back(GameObject(*this, BuildingPrototype, 50, 20, 100));
+	m_objects.push_back(GameObject(*this, BuildingPrototype, 100, 20, 100));
+
+	// test code plz ignore
+	std::vector<WorldPos> path;
+	WorldPos w1 = {0, 0, 0};
+	WorldPos w2 = {300, 300, 0};
+	m_map.makePath(w1, w2, path);
+
+	for (WorldPos& i : path) {
+		std::cout << i.x << ", " << i.y << std::endl;
+	}
 }
 
 GameWorld::~GameWorld()
@@ -69,7 +87,7 @@ bool GameWorld::Update()
 
 	// simulate physics
 	dSpaceCollide(m_space, (void*) this, &NearCollideCallback);
-	dWorldQuickStep(m_world, 1.f / 60.f);
+	dWorldStep(m_world, 1.f / 60.f);
 	dJointGroupEmpty(m_group);
 
 	Ogre::Vector3 objPos = m_objects.front().GetLocation();
@@ -80,6 +98,10 @@ bool GameWorld::Update()
 	}
 
 	return true;
+}
+
+AStarMap& GameWorld::GetMap() {
+	return m_map;
 }
 
 void GameWorld::NearCollideCallback(void *data, dGeomID o1, dGeomID o2)
@@ -98,11 +120,22 @@ void GameWorld::NearCollideCallback(void *data, dGeomID o1, dGeomID o2)
 	int numcol = dCollide(o1, o2, 1, &contact.geom, sizeof(dContact));
 
 	if (numcol > 0) {
-		if (contact.geom.depth > 0.5) {
-			std::cout << contact.geom.depth << std::endl;
-		}
 		dJointID j = dJointCreateContact(self->m_world, self->m_group, &contact);
 		dJointAttach(j, b1, b2);
+
+		if (contact.geom.depth < 0.5) {
+			return;
+		}
+
+		if (self->m_bodyToObject.find(b1) != self->m_bodyToObject.end()) {
+			GameObject *obj = self->m_bodyToObject[b1];
+			obj->RegisterCollision(contact.geom.depth * 3.f);
+		}
+
+		if (self->m_bodyToObject.find(b2) != self->m_bodyToObject.end()) {
+			GameObject *obj = self->m_bodyToObject[b2];
+			obj->RegisterCollision(contact.geom.depth * 3.f);
+		}
 	}
 }
 

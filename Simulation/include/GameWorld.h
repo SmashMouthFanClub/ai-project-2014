@@ -9,6 +9,7 @@
 #include <ode/ode.h>
 
 #include "GameObject.h"
+#include "AStarMap.h"
 
 class Game;
 
@@ -23,6 +24,7 @@ class GameWorld
 	// game data stuff
 	Game& m_game;
 	std::vector<GameObject> m_objects;
+	AStarMap m_map;
 
 	// rendering member variables
 	Ogre::SceneManager *m_scene;
@@ -42,6 +44,8 @@ public:
 
 	bool Update();
 
+	AStarMap& GetMap();
+
 	Ogre::SceneManager *GetScene();
 	Ogre::MeshPtr GetMesh(std::string meshName);
 
@@ -51,6 +55,7 @@ public:
 
 	static void NearCollideCallback(void *data, dGeomID o1, dGeomID o2);
 
+	friend GameObject;
 };
 
 #endif
