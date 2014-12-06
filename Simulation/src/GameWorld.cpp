@@ -15,6 +15,7 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 	m_meshes["CarBox"] = CreateBox(m_scene, "CarBox", 2.0f, 1.5f, 4.0f, Ogre::ColourValue(0.25f, 0.25f, 0.80f), Ogre::ColourValue(0.15f, 0.15f, 0.5f));
 	m_meshes["PedBox"] = CreateBox(m_scene, "PedBox", 0.5f, 2.0f, 0.5f, Ogre::ColourValue(0.80f, 0.25f, 0.25f), Ogre::ColourValue(0.5f, 0.15f, 0.15f));
 	m_meshes["Ground"] = CreatePlane(m_scene, "Ground", 500, 500, Ogre::ColourValue(0.25f, 0.70f, 0.25f));
+	m_meshes["Building1"] = CreateBox(m_scene, "Building1", 10.0f, 20.0f, 10.0f, Ogre::ColourValue(0.5f, 0.5f, 0.5f), Ogre::ColourValue(0.2f, 0.2f, 0.2f));
 
 	// create a camera
 	Ogre::Camera *camera = m_scene->createCamera("PrimaryCamera");
@@ -24,7 +25,7 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 	cameraNode->attachObject(camera);
 	m_cameras.push_back(Camera {camera, cameraNode});
 	game.SetCamera(camera);
-	cameraNode->setPosition(Ogre::Vector3(200, 100, 200));
+	cameraNode->setPosition(Ogre::Vector3(-100, 100, -100));
 	camera->lookAt(Ogre::Vector3(0, 0, 0));
 
 	// create the ground
@@ -53,6 +54,11 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 	for (int i = 0; i < 10; ++i) {
 		m_objects.push_back(GameObject(*this, PedPrototype, i * 5, 2, 45 - i * 5));
 	}
+
+	m_objects.push_back(GameObject(*this, BuildingPrototype, 50, 20, 50));
+	m_objects.push_back(GameObject(*this, BuildingPrototype, 100, 20, 50));
+	m_objects.push_back(GameObject(*this, BuildingPrototype, 50, 20, 100));
+	m_objects.push_back(GameObject(*this, BuildingPrototype, 100, 20, 100));
 }
 
 GameWorld::~GameWorld()
@@ -69,7 +75,7 @@ bool GameWorld::Update()
 
 	// simulate physics
 	dSpaceCollide(m_space, (void*) this, &NearCollideCallback);
-	dWorldQuickStep(m_world, 1.f / 60.f);
+	dWorldStep(m_world, 1.f / 60.f);
 	dJointGroupEmpty(m_group);
 
 	Ogre::Vector3 objPos = m_objects.front().GetLocation();

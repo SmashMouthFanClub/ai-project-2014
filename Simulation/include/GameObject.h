@@ -51,6 +51,7 @@ public:
 	Ogre::Vector3 GetLocation();
 
 	dBodyID GetPhysicsBody();
+	void RegisterCollision(double depth);
 
 };
 

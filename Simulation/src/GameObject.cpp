@@ -5,20 +5,20 @@
 
 const ObjectPrototype CarPrototype = {
 	"CarBox",
-	30, 40000, 10000,
-	1000, 20,
+	100000, 80000, 20000,
+	1000, 10,
 	true, false, false
 };
 
 const ObjectPrototype PedPrototype = {
 	"PedBox",
-	180, 0, 0,
+	0, 0, 0,
 	70,	1,
 	true, true, false
 };
 
 const ObjectPrototype BuildingPrototype = {
-	"BuildingBox",
+	"Building1",
 	0, 0, 0,
 	1000000000, 1000000000, 
 	false, true, true
@@ -62,33 +62,11 @@ GameObject::GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, do
 
 void GameObject::Update()
 {
-	Action a = {0.3, 1};	// dummy event, will use later
+	// layout: turn, acceleration
+	Action a = {1, 1};	// dummy event, will use later
 
-	// calculate magnitude of force vector
-	double forceMagnitude = a.m_accelerateMagnitude;
-	if (forceMagnitude > 0)
-		forceMagnitude *= m_maxForward;
-	else
-		forceMagnitude *= m_maxBackward;
-
-	// calculate angle of force vector
-	Ogre::Degree forceAngle(Ogre::Radian(a.m_turnMagnitude * m_maxTurn));
-
-	// convert polar coordinates to x/y coordinates
-	double forward = Ogre::Math::Cos(forceAngle) * forceMagnitude;
-	double centripetal = Ogre::Math::Sin(forceAngle) * forceMagnitude;
-
-	// get a rotation quaternion so we can do cool things with it
-	const dReal *oldRotation = dBodyGetQuaternion(m_body);
-	Ogre::Quaternion rotation = Ogre::Quaternion(oldRotation[0], oldRotation[1], oldRotation[2], oldRotation[3]);
-
-	// apply forces
-	Ogre::Vector3 force = rotation * Ogre::Vector3(forward, 0, centripetal);
-	dBodySetForce(m_body, -1 * force[2], 0, force[0]);
-
-	// set the rotation of the object
-	Ogre::Vector3 angularVel = rotation * Ogre::Vector3(0, m_maxTurn * a.m_turnMagnitude * 0.1f, 0);
-	dBodySetAngularVel(m_body, 0, angularVel[1], 0);
+	dBodyAddRelForce(m_body, 0, 0, a.m_accelerateMagnitude * m_maxForward);
+	dBodyAddTorque(m_body, 0, a.m_turnMagnitude * m_maxTurn, 0);
 }
 
 void GameObject::Render()
@@ -108,4 +86,9 @@ Ogre::Vector3 GameObject::GetLocation()
 dBodyID GameObject::GetPhysicsBody()
 {
 	return m_body;
+}
+
+void GameObject::RegisterCollision(double depth)
+{
+
 }
