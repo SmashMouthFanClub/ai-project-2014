@@ -5,14 +5,14 @@
 
 const ObjectPrototype CarPrototype = {
 	"CarBox",
-	30, 80000, 20000,
+	30, 40000, 10000,
 	1000, 20,
 	true, false, false
 };
 
 const ObjectPrototype PedPrototype = {
 	"PedBox",
-	180, 80, 80,
+	180, 0, 0,
 	70,	1,
 	true, true, false
 };
@@ -62,44 +62,33 @@ GameObject::GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, do
 
 void GameObject::Update()
 {
-	Action a = {0.8, 0.3};	// dummy event, will use later
-	/*dBodySetForce(m_body, 0, 0, 0);
-	dBodySetTorque(m_body, 0, 0, 0);
-	dBodyAddRelForce(m_body, 0, 0, a.m_accelerateMagnitude * m_maxForward * 2);
-	dBodyAddRelTorque(m_body, 0, a.m_accelerateMagnitude * m_maxForward * 8 , 0);*/
+	Action a = {0.3, 1};	// dummy event, will use later
 
+	// calculate magnitude of force vector
+	double forceMagnitude = a.m_accelerateMagnitude;
+	if (forceMagnitude > 0)
+		forceMagnitude *= m_maxForward;
+	else
+		forceMagnitude *= m_maxBackward;
+
+	// calculate angle of force vector
+	Ogre::Degree forceAngle(Ogre::Radian(a.m_turnMagnitude * m_maxTurn));
+
+	// convert polar coordinates to x/y coordinates
+	double forward = Ogre::Math::Cos(forceAngle) * forceMagnitude;
+	double centripetal = Ogre::Math::Sin(forceAngle) * forceMagnitude;
+
+	// get a rotation quaternion so we can do cool things with it
 	const dReal *oldRotation = dBodyGetQuaternion(m_body);
 	Ogre::Quaternion rotation = Ogre::Quaternion(oldRotation[0], oldRotation[1], oldRotation[2], oldRotation[3]);
-	//Ogre::Vector3 force = rotation * Ogre::Vector3(0, 0, a.m_accelerateMagnitude * m_maxForward * 5);
-	//Ogre::Vector3 torque = rotation * Ogre::Vector3(0, a.m_accelerateMagnitude * m_maxForward * 5, 0);
-	Ogre::Vector3 linearVel = rotation * Ogre::Vector3(0, 0, 40);
-	Ogre::Vector3 angularVel = rotation * Ogre::Vector3(0, 2, 0);
 
-	//std::cout << force << std::endl;
+	// apply forces
+	Ogre::Vector3 force = rotation * Ogre::Vector3(forward, 0, centripetal);
+	dBodySetForce(m_body, -1 * force[2], 0, force[0]);
 
-	//const dReal *oldForce = dBodyGetForce(m_body);
-	//dBodySetForce(m_body, force[0], oldForce[1], force[2]);
-
-	const dReal *oldLinearVel = dBodyGetLinearVel(m_body);
-	dBodySetLinearVel(m_body, linearVel[0], oldLinearVel[1], linearVel[2]);
-
-	//const dReal *oldTorque = dBodyGetTorque(m_body);
-	//dBodySetTorque(m_body, oldTorque[0], torque[1], oldTorque[2]);
-	
-	const dReal *oldAngularVel = dBodyGetAngularVel(m_body);
+	// set the rotation of the object
+	Ogre::Vector3 angularVel = rotation * Ogre::Vector3(0, m_maxTurn * a.m_turnMagnitude * 0.1f, 0);
 	dBodySetAngularVel(m_body, 0, angularVel[1], 0);
-
-	if (m_lockRotation) {
-		const dReal *oldRotation = dBodyGetRotation(m_body);
-		dMatrix3 lockRotation;
-		for (int i = 0; i < 12; ++i) {
-			lockRotation[i] = oldRotation[i];
-		}
-		lockRotation[1] = 0;
-		lockRotation[5] = 0.9f;
-		lockRotation[9] = 0;
-		dBodySetRotation(m_body, lockRotation);
-	}
 }
 
 void GameObject::Render()
@@ -108,6 +97,12 @@ void GameObject::Render()
 	const dReal *rot = dBodyGetQuaternion(m_body);
 	m_sceneNode->setPosition(Ogre::Vector3(pos[0], pos[1], pos[2]));
 	m_sceneNode->setOrientation(Ogre::Quaternion(rot[0], rot[1], rot[2], rot[3]));
+}
+
+Ogre::Vector3 GameObject::GetLocation()
+{
+	const dReal *pos = dBodyGetPosition(m_body);
+	return Ogre::Vector3(pos[0], pos[1], pos[2]);
 }
 
 dBodyID GameObject::GetPhysicsBody()

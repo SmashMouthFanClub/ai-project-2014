@@ -24,7 +24,7 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 	cameraNode->attachObject(camera);
 	m_cameras.push_back(Camera {camera, cameraNode});
 	game.SetCamera(camera);
-	cameraNode->setPosition(Ogre::Vector3(120, 120, 120));
+	cameraNode->setPosition(Ogre::Vector3(200, 100, 200));
 	camera->lookAt(Ogre::Vector3(0, 0, 0));
 
 	// create the ground
@@ -45,7 +45,7 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 	//m_objects.push_back(GameObject(*this, CarPrototype, 0, 2, 0));
 
 	// create some cars
-	for (int i = 0; i < 25; ++i) {
+	for (int i = 0; i < 1; ++i) {
 		m_objects.push_back(GameObject(*this, CarPrototype, (i % 5) * 10.f, 2, (i / 5) * 10.f));
 	}
 
@@ -71,6 +71,9 @@ bool GameWorld::Update()
 	dSpaceCollide(m_space, (void*) this, &NearCollideCallback);
 	dWorldQuickStep(m_world, 1.f / 60.f);
 	dJointGroupEmpty(m_group);
+
+	Ogre::Vector3 objPos = m_objects.front().GetLocation();
+	m_cameras.front().m_camera->lookAt(objPos);
 
 	for (auto& object : m_objects) {
 		object.Render();
