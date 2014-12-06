@@ -2,6 +2,7 @@
 
 #include "Game.h"
 #include "GameWorld.h"
+#include "AStarMap.h"
 
 Ogre::MeshPtr CreateBox(Ogre::SceneManager *scene, Ogre::String name, double w, double h, double d, Ogre::ColourValue color1, Ogre::ColourValue color2);
 Ogre::MeshPtr CreatePlane(Ogre::SceneManager *scene, Ogre::String name, double x, double y, Ogre::ColourValue color);
@@ -59,6 +60,16 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 	m_objects.push_back(GameObject(*this, BuildingPrototype, 100, 20, 50));
 	m_objects.push_back(GameObject(*this, BuildingPrototype, 50, 20, 100));
 	m_objects.push_back(GameObject(*this, BuildingPrototype, 100, 20, 100));
+
+	AStarMap astar("paths.txt");
+	std::vector<WorldPos> path;
+	WorldPos w1 = {0, 0, 0};
+	WorldPos w2 = {300, 300, 0};
+	astar.makePath(w1, w2, path);
+
+	for (WorldPos& i : path) {
+		std::cout << i.x << ", " << i.y << std::endl;
+	}
 }
 
 GameWorld::~GameWorld()
@@ -104,11 +115,22 @@ void GameWorld::NearCollideCallback(void *data, dGeomID o1, dGeomID o2)
 	int numcol = dCollide(o1, o2, 1, &contact.geom, sizeof(dContact));
 
 	if (numcol > 0) {
-		if (contact.geom.depth > 0.5) {
-			std::cout << contact.geom.depth << std::endl;
-		}
 		dJointID j = dJointCreateContact(self->m_world, self->m_group, &contact);
 		dJointAttach(j, b1, b2);
+
+		if (contact.geom.depth < 0.5) {
+			return;
+		}
+
+		if (self->m_bodyToObject.find(b1) != self->m_bodyToObject.end()) {
+			GameObject *obj = self->m_bodyToObject[b1];
+			obj->RegisterCollision(contact.geom.depth * 3.f);
+		}
+
+		if (self->m_bodyToObject.find(b2) != self->m_bodyToObject.end()) {
+			GameObject *obj = self->m_bodyToObject[b2];
+			obj->RegisterCollision(contact.geom.depth * 3.f);
+		}
 	}
 }
 

@@ -40,6 +40,8 @@ class GameObject
 	const double m_maxForward;
 	const double m_maxBackward;
 	double m_hitPoints;
+	double m_collisionAccum;
+	double m_totalDamage;
 
 public:
 

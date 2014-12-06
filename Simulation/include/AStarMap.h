@@ -4,6 +4,8 @@
 #include <vector>
 #include <map>
 
+#include "GameState.h"
+
 // Node to use in explored and nonexplored list and priority_queue of A*
 struct Node {
 	struct Node *parent;

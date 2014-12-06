@@ -27,7 +27,7 @@ const ObjectPrototype BuildingPrototype = {
 GameObject::GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, double y, double z) :
 	m_meshName(proto.m_meshName), m_sceneEntity(nullptr), m_sceneNode(nullptr),	m_lockRotation(proto.m_lockRotation),
 	m_maxTurn(proto.m_maxTurnAngle), m_maxForward(proto.m_maxForward), m_maxBackward(proto.m_maxBackward),
-	m_hitPoints(proto.m_maxHitPoints)
+	m_hitPoints(proto.m_maxHitPoints), m_collisionAccum(0), m_totalDamage(0)
 {
 	m_sceneEntity = gw.GetScene()->createEntity(gw.GetMesh(m_meshName));
 	m_sceneNode = gw.GetScene()->getRootSceneNode()->createChildSceneNode();
@@ -62,11 +62,31 @@ GameObject::GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, do
 
 void GameObject::Update()
 {
+	// construct the game state to pass to an agent
+	GameState gs;
+
+	gs.m_nearbyMoving = std::vector<WorldPos>();
+	gs.m_nearbyStatic = std::vector<WorldPos>();
+
+	gs.m_distanceFromCenter = 0;
+	gs.m_distanceFromDestination = 0;
+	gs.m_deviationAngle = 0;
+
+	gs.m_damageSelfInstant = m_collisionAccum;
+	gs.m_damageSelfTotal = m_totalDamage;
+	gs.m_damageOthersInstant = 0;
+	gs.m_damageOthersTotal = 0;
+
 	// layout: turn, acceleration
 	Action a = {1, 1};	// dummy event, will use later
 
+	// do physics things
 	dBodyAddRelForce(m_body, 0, 0, a.m_accelerateMagnitude * m_maxForward);
 	dBodyAddTorque(m_body, 0, a.m_turnMagnitude * m_maxTurn, 0);
+
+	// reset collision accumulator
+	m_totalDamage += m_collisionAccum;
+	m_collisionAccum = 0;
 }
 
 void GameObject::Render()
@@ -90,5 +110,5 @@ dBodyID GameObject::GetPhysicsBody()
 
 void GameObject::RegisterCollision(double depth)
 {
-
+	m_collisionAccum += depth;
 }
