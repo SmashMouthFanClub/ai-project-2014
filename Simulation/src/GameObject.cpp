@@ -25,9 +25,9 @@ const ObjectPrototype BuildingPrototype = {
 };
 
 GameObject::GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, double y, double z) :
-	m_meshName(proto.m_meshName), m_sceneEntity(nullptr), m_sceneNode(nullptr),	m_lockRotation(proto.m_lockRotation),
+	m_meshName(proto.m_meshName), m_sceneEntity(nullptr), m_sceneNode(nullptr),	m_lockRotation(proto.m_lockRotation), m_isKinematic(proto.m_isKinematic),
 	m_maxTurn(proto.m_maxTurnAngle), m_maxForward(proto.m_maxForward), m_maxBackward(proto.m_maxBackward),
-	m_hitPoints(proto.m_maxHitPoints), m_collisionAccum(0), m_totalDamage(0)
+	m_hitPoints(proto.m_maxHitPoints), m_collisionAccum(0), m_totalDamage(0), m_gw(gw)
 {
 	m_sceneEntity = gw.GetScene()->createEntity(gw.GetMesh(m_meshName));
 	m_sceneNode = gw.GetScene()->getRootSceneNode()->createChildSceneNode();
@@ -68,14 +68,41 @@ void GameObject::Update()
 	gs.m_nearbyMoving = std::vector<WorldPos>();
 	gs.m_nearbyStatic = std::vector<WorldPos>();
 
+	Ogre::Vector3 n = GetLocation();
+	for (auto& i : m_gw.m_objects) {
+		Ogre::Vector3 m = i.GetLocation();
+
+		double diffX = m.x - n.x;
+		double diffY = m.z - n.z;
+		double theta = Ogre::Math::ATan2(diffY, diffX).valueDegrees();
+
+		if (i.m_isKinematic) {
+			gs.m_nearbyStatic.push_back(WorldPos {diffX, diffY, theta});
+		} else {
+			gs.m_nearbyMoving.push_back(WorldPos {diffX, diffY, theta});
+		}
+	}
+
 	gs.m_distanceFromCenter = 0;
+	// I'll do this one later
+
 	gs.m_distanceFromDestination = 0;
 	gs.m_deviationAngle = 0;
 
+	if (m_pathToDest.size() != 0) {
+		WorldPos p = m_pathToDest.back();
+
+		double diffX = p.x - n.x;
+		double diffY = p.y - n.z;
+
+		gs.m_distanceFromDestination = Ogre::Math::Sqrt(Ogre::Math::Sqr(diffX) + Ogre::Math::Sqr(diffY));
+		gs.m_deviationAngle = Ogre::Math::ATan2(diffY, diffX).valueDegrees();
+	}
+
 	gs.m_damageSelfInstant = m_collisionAccum;
 	gs.m_damageSelfTotal = m_totalDamage;
-	gs.m_damageOthersInstant = 0;
-	gs.m_damageOthersTotal = 0;
+	gs.m_damageOthersInstant = 0; // yeah, not using this
+	gs.m_damageOthersTotal = 0; // ... or this
 
 	// layout: turn, acceleration
 	Action a = {1, 1};	// dummy event, will use later

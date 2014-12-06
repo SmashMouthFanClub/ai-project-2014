@@ -9,7 +9,8 @@ Ogre::MeshPtr CreatePlane(Ogre::SceneManager *scene, Ogre::String name, double x
 
 void NearCollideCallback(void *data, dGeomID o1, dGeomID o2);
 
-GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(nullptr)
+GameWorld::GameWorld(Game& game, std::string sceneName) :
+	m_game(game), m_map("paths.txt"), m_scene(nullptr)
 {
 	m_scene = game.GetRenderer()->createSceneManager(Ogre::ST_GENERIC, sceneName);
 
@@ -61,11 +62,11 @@ GameWorld::GameWorld(Game& game, std::string sceneName) : m_game(game), m_scene(
 	m_objects.push_back(GameObject(*this, BuildingPrototype, 50, 20, 100));
 	m_objects.push_back(GameObject(*this, BuildingPrototype, 100, 20, 100));
 
-	AStarMap astar("paths.txt");
+	// test code plz ignore
 	std::vector<WorldPos> path;
 	WorldPos w1 = {0, 0, 0};
 	WorldPos w2 = {300, 300, 0};
-	astar.makePath(w1, w2, path);
+	m_map.makePath(w1, w2, path);
 
 	for (WorldPos& i : path) {
 		std::cout << i.x << ", " << i.y << std::endl;
@@ -97,6 +98,10 @@ bool GameWorld::Update()
 	}
 
 	return true;
+}
+
+AStarMap& GameWorld::GetMap() {
+	return m_map;
 }
 
 void GameWorld::NearCollideCallback(void *data, dGeomID o1, dGeomID o2)

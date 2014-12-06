@@ -70,8 +70,11 @@ void AStarMap::makePath(WorldPos startPos, WorldPos endPos, std::vector<WorldPos
      std::priority_queue<Node *, std::vector<Node *>, CompareNode> unexplored;
      double totalDist = getDistance(startPos, endPos);
 
+	 std::vector<Node> nodePool;
+
      // Create start node to add to the unexplored set
-     Node *start = new Node();
+     nodePool.push_back(Node());
+     Node *start = &nodePool.back();
      start->parent = 0;
      start->pos = startPos;
      start->g = 0;
@@ -103,8 +106,9 @@ void AStarMap::makePath(WorldPos startPos, WorldPos endPos, std::vector<WorldPos
 	       // Calculate the h and g values and set up a child node for the sets
 	       double h = getDistance(*it, endPos);
 	       double g = top->g + getDistance(*it, top->pos);
-		    
-	       Node *child = new Node();
+		   
+		   nodePool.push_back(Node());
+	       Node *child = &nodePool.back();
 	       child->parent = top;
 	       child->pos = *it;
 	       child->g = g;
@@ -129,7 +133,7 @@ void AStarMap::makePath(WorldPos startPos, WorldPos endPos, std::vector<WorldPos
 
 	       // If we are not adding this one to the unexplored set, then delete it
 	       if (ignore) {
-		    delete child;
+		    //delete child;
 		    continue;
 	       }
 

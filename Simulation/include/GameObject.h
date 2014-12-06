@@ -4,6 +4,8 @@
 #include <OGRE/Ogre.h>
 #include <ode/ode.h>
 
+#include "GameState.h"
+
 class GameWorld;
 
 struct ObjectPrototype {
@@ -34,6 +36,7 @@ class GameObject
 	dGeomID m_geom;
 	dMass m_mass;
 	bool m_lockRotation;
+	bool m_isKinematic;
 
 	// game sim stuff
 	const double m_maxTurn;
@@ -42,6 +45,8 @@ class GameObject
 	double m_hitPoints;
 	double m_collisionAccum;
 	double m_totalDamage;
+	std::vector<WorldPos> m_pathToDest;
+	GameWorld& m_gw;
 
 public:
 
