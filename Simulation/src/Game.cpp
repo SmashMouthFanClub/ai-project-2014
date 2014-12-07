@@ -46,7 +46,7 @@ bool Game::Tick()
 
 	++m_framecount;
 
-	if (m_framecount > 100) {
+	if (m_framecount > 3000) {
 		Reset();
 		m_framecount = 0;
 	}
