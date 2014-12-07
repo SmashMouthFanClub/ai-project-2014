@@ -95,16 +95,10 @@ GameWorld::GameWorld(Game& game, std::string sceneName) :
 	camera->lookAt(Ogre::Vector3(0, 10, 0));
 
 	// test code plz ignore
-	/*std::vector<WorldPos> path;
+	std::vector<WorldPos> path;
 	WorldPos w1 = {0, 0, 0};
 	WorldPos w2 = {300, 300, 0};
 	m_map.makePath(w1, w2, path);
-
-	for (WorldPos& i : path) {
-		std::cout << i.x << ", " << i.y << std::endl;
-	}*/
-
-	std::cout << "d" << std::endl;
 }
 
 GameWorld::~GameWorld()
