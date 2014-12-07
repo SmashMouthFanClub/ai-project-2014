@@ -35,6 +35,7 @@ Game::Game(int w, int h) :
 
 Game::~Game()
 {
+	delete m_gw.release();
 	dCloseODE();
 }
 

@@ -120,6 +120,9 @@ void AStarMap::makePath(WorldPos startPos, WorldPos endPos, std::vector<WorldPos
 	       // If h (distance to endPos (goal)) is 0, then this is the goal state, so we return
 	       if (h == 0) {
 		    generatePath(child, outList);
+		    for (auto node: nodePool) {
+		    	delete node;
+		    }
 		    return;
 	       }
 
@@ -144,6 +147,9 @@ void AStarMap::makePath(WorldPos startPos, WorldPos endPos, std::vector<WorldPos
 
 	  // We have now explored the node we poped from the priority_queue
 	  explored.push_back(top);
+     }
+     for (auto node: nodePool) {
+      	delete node;
      }
 }
 
