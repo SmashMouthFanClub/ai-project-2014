@@ -19,10 +19,34 @@ const ObjectPrototype PedPrototype = {
 	false
 };
 
-const ObjectPrototype BuildingPrototype = {
+const ObjectPrototype Building1Prototype = {
 	"Building1",
 	0, 0, 0,
 	1000000000, 1000000000, 
+	false, true, true,
+	false
+};
+
+const ObjectPrototype Building2Prototype = {
+	"Building2",
+	0, 0, 0,
+	1000000000, 1000000000,
+	false, true, true,
+	false
+};
+
+const ObjectPrototype Building3Prototype = {
+	"Building3",
+	0, 0, 0,
+	1000000000, 1000000000,
+	false, true, true,
+	false
+};
+
+const ObjectPrototype Building4Prototype = {
+	"Building4",
+	0, 0, 0,
+	1000000000, 1000000000,
 	false, true, true,
 	false
 };

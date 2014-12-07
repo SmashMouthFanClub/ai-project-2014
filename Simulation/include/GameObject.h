@@ -23,7 +23,10 @@ struct ObjectPrototype {
 
 extern const ObjectPrototype CarPrototype;
 extern const ObjectPrototype PedPrototype;
-extern const ObjectPrototype BuildingPrototype;
+extern const ObjectPrototype Building1Prototype;
+extern const ObjectPrototype Building2Prototype;
+extern const ObjectPrototype Building3Prototype;
+extern const ObjectPrototype Building4Prototype;
 
 class GameObject
 {
