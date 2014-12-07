@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 #include "Game.h"
 #include "GameWorld.h"
@@ -14,10 +16,24 @@ GameWorld::GameWorld(Game& game, std::string sceneName) :
 {
 	m_scene = game.GetRenderer()->createSceneManager(Ogre::ST_GENERIC, sceneName);
 
+	// Important game objects
 	m_meshes["CarBox"] = CreateBox(m_scene, "CarBox", 2.0f, 1.5f, 4.0f, Ogre::ColourValue(0.25f, 0.25f, 0.80f), Ogre::ColourValue(0.15f, 0.15f, 0.5f));
 	m_meshes["PedBox"] = CreateBox(m_scene, "PedBox", 0.5f, 2.0f, 0.5f, Ogre::ColourValue(0.80f, 0.25f, 0.25f), Ogre::ColourValue(0.5f, 0.15f, 0.15f));
-	m_meshes["Ground"] = CreatePlane(m_scene, "Ground", 500, 500, Ogre::ColourValue(0.25f, 0.70f, 0.25f));
-	m_meshes["Building1"] = CreateBox(m_scene, "Building1", 10.0f, 20.0f, 10.0f, Ogre::ColourValue(0.5f, 0.5f, 0.5f), Ogre::ColourValue(0.2f, 0.2f, 0.2f));
+	m_meshes["Ground"] = CreatePlane(m_scene, "Ground", 5000, 5000, Ogre::ColourValue(0.25f, 0.70f, 0.25f));
+
+	// Assorted buildings
+	m_meshes["Building1"] = CreateBox(m_scene, "Building1", 10.0f, 100.0f, 10.0f, Ogre::ColourValue(0.5f, 0.5f, 0.5f), Ogre::ColourValue(0.2f, 0.2f, 0.2f));
+	m_meshes["Building2"] = CreateBox(m_scene, "Building2", 20.0f, 100.0f, 20.0f, Ogre::ColourValue(0.4f, 0.4f, 0.4f), Ogre::ColourValue(0.2f, 0.2f, 0.2f));
+	m_meshes["Building3"] = CreateBox(m_scene, "Building3", 20.0f, 100.0f, 10.0f, Ogre::ColourValue(0.3f, 0.3f, 0.3f), Ogre::ColourValue(0.1f, 0.1f, 0.1f));
+	m_meshes["Building4"] = CreateBox(m_scene, "Building4", 10.0f, 100.0f, 20.0f, Ogre::ColourValue(0.5f, 0.5f, 0.5f), Ogre::ColourValue(0.3f, 0.3f, 0.3f));
+
+	// Assorted roads
+	m_meshes["RoadH1"] = CreatePlane(m_scene, "RoadH1",  60, 10, Ogre::ColourValue(0.5f, 0.5f, 0.5f));
+	m_meshes["RoadH2"] = CreatePlane(m_scene, "RoadH2", 110, 10, Ogre::ColourValue(0.5f, 0.5f, 0.5f));
+	m_meshes["RoadH3"] = CreatePlane(m_scene, "RoadH3", 160, 10, Ogre::ColourValue(0.5f, 0.5f, 0.5f));
+	m_meshes["RoadV1"] = CreatePlane(m_scene, "RoadV1", 10,  60, Ogre::ColourValue(0.5f, 0.5f, 0.5f));
+	m_meshes["RoadV2"] = CreatePlane(m_scene, "RoadV2", 10, 110, Ogre::ColourValue(0.5f, 0.5f, 0.5f));
+	m_meshes["RoadV3"] = CreatePlane(m_scene, "RoadV3", 10, 160, Ogre::ColourValue(0.5f, 0.5f, 0.5f));
 
 	// create a camera
 	Ogre::Camera *camera = m_scene->createCamera("PrimaryCamera");
@@ -27,8 +43,9 @@ GameWorld::GameWorld(Game& game, std::string sceneName) :
 	cameraNode->attachObject(camera);
 	m_cameras.push_back(Camera {camera, cameraNode});
 	game.SetCamera(camera);
-	cameraNode->setPosition(Ogre::Vector3(-100, 100, -100));
-	camera->lookAt(Ogre::Vector3(0, 0, 0));
+	cameraNode->setPosition(Ogre::Vector3(250, 500, 250));
+	//camera->lookAt(Ogre::Vector3(0, 0, 0));
+	camera->lookAt(Ogre::Vector3(145, 0, 145));
 
 	// create the ground
 	Ogre::Entity *ground = m_scene->createEntity(GetMesh("Ground"));
@@ -44,33 +61,50 @@ GameWorld::GameWorld(Game& game, std::string sceneName) :
 	dWorldSetCFM(m_world, 1e-5);
 	dCreatePlane(m_space, 0, 1, 0, 0);
 
-	// single test car
-	//m_objects.push_back(GameObject(*this, CarPrototype, 0, 2, 0));
+	// dictionary of prototypes
+	std::map<std::string, const ObjectPrototype*> protos;
+	protos["Car"] = &CarPrototype;
+	protos["Ped"] = &PedPrototype;
+	protos["Building1"] = &Building1Prototype;
+	protos["Building2"] = &Building2Prototype;
+	protos["Building3"] = &Building3Prototype;
+	protos["Building4"] = &Building4Prototype;
 
-	// create some cars
-	for (int i = 0; i < 1; ++i) {
-		m_objects.push_back(GameObject(*this, CarPrototype, (i % 5) * 10.f, 2, (i / 5) * 10.f));
+	// load game objects
+	std::ifstream inFile("objects.txt");
+	while (!inFile.eof()) {
+		std::string line;
+		std::getline(inFile, line);
+		std::istringstream is(line);
+
+		std::string name;
+		int isObject;
+		double x, y, z;
+
+		is >> name;
+		is >> isObject;
+		is >> x;
+		is >> y;
+		is >> z;
+
+		if (isObject == 0) {
+			m_statics.push_back(StaticMesh(*this, name, Ogre::Vector3(x, y, z)));
+		} else {
+			m_objects.push_back(GameObject(*this, *protos[name], x, y, z));
+		}
 	}
-
-	// create some pedestrians
-	for (int i = 0; i < 10; ++i) {
-		m_objects.push_back(GameObject(*this, PedPrototype, i * 5, 2, 45 - i * 5));
-	}
-
-	m_objects.push_back(GameObject(*this, BuildingPrototype, 50, 20, 50));
-	m_objects.push_back(GameObject(*this, BuildingPrototype, 100, 20, 50));
-	m_objects.push_back(GameObject(*this, BuildingPrototype, 50, 20, 100));
-	m_objects.push_back(GameObject(*this, BuildingPrototype, 100, 20, 100));
 
 	// test code plz ignore
-	std::vector<WorldPos> path;
+	/*std::vector<WorldPos> path;
 	WorldPos w1 = {0, 0, 0};
 	WorldPos w2 = {300, 300, 0};
 	m_map.makePath(w1, w2, path);
 
 	for (WorldPos& i : path) {
 		std::cout << i.x << ", " << i.y << std::endl;
-	}
+	}*/
+
+	std::cout << "d" << std::endl;
 }
 
 GameWorld::~GameWorld()
@@ -90,8 +124,8 @@ bool GameWorld::Update()
 	dWorldStep(m_world, 1.f / 60.f);
 	dJointGroupEmpty(m_group);
 
-	Ogre::Vector3 objPos = m_objects.front().GetLocation();
-	m_cameras.front().m_camera->lookAt(objPos);
+	//Ogre::Vector3 objPos = m_objects.front().GetLocation();
+	//m_cameras.front().m_camera->lookAt(objPos);
 
 	for (auto& object : m_objects) {
 		object.Render();

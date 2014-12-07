@@ -9,6 +9,7 @@
 #include <ode/ode.h>
 
 #include "GameObject.h"
+#include "StaticMesh.h"
 #include "AStarMap.h"
 
 class Game;
@@ -24,6 +25,7 @@ class GameWorld
 	// game data stuff
 	Game& m_game;
 	std::vector<GameObject> m_objects;
+	std::vector<StaticMesh> m_statics;
 	AStarMap m_map;
 
 	// rendering member variables

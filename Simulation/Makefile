@@ -2,7 +2,7 @@ CC = g++ -std=c++11 -I include
 CFLAGS = -Wall
 LINK = -lOgreMain -lOIS -lboost_system -lode -lpthread
 
-all: main.o Game.o GameWorld.o GameObject.o AStarMap.o
+all: main.o Game.o GameWorld.o GameObject.o AStarMap.o StaticMesh.o
 	$(CC) $(CFLAGS) bin/*.o -o bin/Simulation $(LINK)
 
 main.o: src/main.cpp include/Game.h
@@ -19,6 +19,9 @@ GameObject.o: src/GameObject.cpp include/GameObject.h
 
 AStarMap.o: src/AStarMap.cpp include/AStarMap.h include/GameState.h
 	$(CC) $(CFLAGS) -c src/AStarMap.cpp -o bin/AStarMap.o
+
+StaticMesh.o: src/StaticMesh.cpp include/StaticMesh.h
+	$(CC) $(CFLAGS) -c src/StaticMesh.cpp -o bin/StaticMesh.o
 
 clean:
 	rm -f bin/Simulation bin/*.o
