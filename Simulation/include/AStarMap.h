@@ -18,7 +18,7 @@ class CompareNode {
 public:
 	bool operator()(Node  *n1, Node *n2)
 	{
-		return n1->f < n2->f;
+		return n1->f > n2->f;
 	}
 };
 
