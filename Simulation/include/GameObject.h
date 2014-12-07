@@ -18,6 +18,7 @@ struct ObjectPrototype {
 	bool m_registerCollisions;
 	bool m_lockRotation;
 	bool m_isKinematic;
+	bool m_hasAgent;
 };
 
 extern const ObjectPrototype CarPrototype;
@@ -45,6 +46,7 @@ class GameObject
 	double m_hitPoints;
 	double m_collisionAccum;
 	double m_totalDamage;
+	bool m_hasAgent;
 	std::vector<WorldPos> m_pathToDest;
 	GameWorld& m_gw;
 

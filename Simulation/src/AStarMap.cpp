@@ -8,6 +8,8 @@
 #include "GameState.h"
 #include "AStarMap.h"
 
+double LineSegmentDistance(WorldPos l1, WorldPos l2, WorldPos p);
+
 AStarMap::AStarMap(const char *fileName)
 {
 	std::ifstream inFile(fileName);
@@ -146,8 +148,45 @@ void AStarMap::makePath(WorldPos startPos, WorldPos endPos, std::vector<WorldPos
 }
 
 double AStarMap::getDistanceFromPath(WorldPos pos) {
-	std::cout << "getDistanceFromPath()" << std::endl;
-	return 1.0f;
+	double minDist = 100000.0f;
+	for (auto& i : m_adjacents) {
+		WorldPos p = m_nodes[i.first];
+
+		for (auto& j : i.second) {
+			double dist = LineSegmentDistance(p, j, pos);
+			if (dist < minDist) {
+				minDist = dist;
+			}
+		}
+	}
+
+	return minDist;
+}
+
+double LineSegmentDistance(WorldPos l1, WorldPos l2, WorldPos p) {
+	double lengthSquared = pow(l1.x - l2.x, 2) + pow(l1.y - l2.y, 2);
+	if (lengthSquared < 0.0001f) {
+		return sqrt(pow(l1.x - p.x, 2) + pow(l1.y - p.y, 2));
+	}
+
+	WorldPos x1 = {p.x - l1.x, p.y - l1.y, 0};
+	WorldPos x2 = {l2.x - l1.x, l2.y - l1.y, 0};
+	double scalarProjection = ((x1.x * x2.x) + (x1.y * x2.y)) / lengthSquared;
+
+	if (scalarProjection < 0.0f) {
+		return sqrt(pow(l1.x - p.x, 2) + pow(l1.y - p.y, 2));
+	}
+
+	if (scalarProjection > 1.0f) {
+		return sqrt(pow(l2.x - p.x, 2) + pow(l2.y - p.y, 2));
+	}
+
+	WorldPos vectorProjection = {
+		l1.x + scalarProjection * l2.x - scalarProjection * l1.x,
+		l1.y + scalarProjection * l2.y - scalarProjection * l1.y,
+		0
+	};
+	return sqrt(pow(vectorProjection.x - p.x, 2) - pow(vectorProjection.y - p.y, 2));
 }
 
 double AStarMap::getDistance(WorldPos from, WorldPos to) {
@@ -177,5 +216,6 @@ void AStarMap::generatePath(Node *node, std::vector<WorldPos> &outList) {
 	  node = node->parent;
      }
      
-     std::reverse(outList.begin(), outList.end());
+     // it's easier to work with this in reverse
+     //std::reverse(outList.begin(), outList.end());
 }
