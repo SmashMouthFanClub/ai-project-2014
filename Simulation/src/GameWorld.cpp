@@ -109,8 +109,10 @@ GameWorld::GameWorld(Game& game, std::string sceneName) :
 
 GameWorld::~GameWorld()
 {
-	//dSpaceDestroy(m_space);
-	//dWorldDestroy(m_world);
+	dSpaceDestroy(m_space);
+	dWorldDestroy(m_world);
+
+	m_game.GetRenderer()->destroySceneManager(m_scene);
 }
 
 bool GameWorld::Update()

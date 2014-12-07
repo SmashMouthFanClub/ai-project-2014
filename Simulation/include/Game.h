@@ -12,7 +12,9 @@ class Game
 	Ogre::RenderWindow *m_window;
 	Ogre::Viewport *m_viewport;
 
-	std::auto_ptr<GameWorld> m_gw;
+	std::unique_ptr<GameWorld> m_gw;
+
+	int m_framecount;
 
 public:
 
@@ -24,6 +26,8 @@ public:
 
 	int GetViewWidth();
 	int GetViewHeight();
+
+	void Reset();
 
 protected:
 

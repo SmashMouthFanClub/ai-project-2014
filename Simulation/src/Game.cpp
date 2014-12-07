@@ -3,7 +3,8 @@
 #include <ode/ode.h>
 #include "Game.h"
 
-Game::Game(int w, int h) : m_window(nullptr), m_viewport(nullptr)
+Game::Game(int w, int h) :
+	m_window(nullptr), m_viewport(nullptr), m_framecount(0)
 {
 	// create OGRE root object
 	m_root = std::auto_ptr<Ogre::Root>(new Ogre::Root("plugins.cfg", "", "logs"));
@@ -29,7 +30,7 @@ Game::Game(int w, int h) : m_window(nullptr), m_viewport(nullptr)
 	m_window->setActive(true);
 	m_window->setAutoUpdated(false);
 
-	m_gw = std::auto_ptr<GameWorld>(new GameWorld(*this, "GameWorld"));
+	m_gw = std::unique_ptr<GameWorld>(new GameWorld(*this, "GameWorld"));
 }
 
 Game::~Game()
@@ -43,6 +44,13 @@ bool Game::Tick()
 		return false;
 	}
 
+	++m_framecount;
+
+	if (m_framecount > 100) {
+		Reset();
+		m_framecount = 0;
+	}
+
 	m_window->update(true);
 	//m_window->swapBuffers();
 
@@ -54,10 +62,14 @@ bool Game::Tick()
 
 void Game::SetCamera(Ogre::Camera *camera)
 {
-	m_viewport = m_window->addViewport(camera);
-	camera->setAspectRatio(GetViewWidth() / GetViewHeight());
-	m_viewport->setAutoUpdated(true);
-	m_viewport->setBackgroundColour(Ogre::ColourValue(0.3, 0.3, 1));
+	if (m_viewport == nullptr) {
+		m_viewport = m_window->addViewport(camera);
+		camera->setAspectRatio(GetViewWidth() / GetViewHeight());
+		m_viewport->setAutoUpdated(true);
+		m_viewport->setBackgroundColour(Ogre::ColourValue(0.3, 0.3, 1));
+	} else {
+		m_viewport->setCamera(camera);
+	}
 }
 
 int Game::GetViewWidth()
@@ -66,6 +78,12 @@ int Game::GetViewWidth()
 		return m_viewport->getActualWidth();
 	}
 	return -1;
+}
+
+void Game::Reset()
+{
+	delete m_gw.release();
+	m_gw = std::unique_ptr<GameWorld>(new GameWorld(*this, "GameWorld"));
 }
 
 int Game::GetViewHeight()
