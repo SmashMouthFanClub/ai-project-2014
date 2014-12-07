@@ -65,6 +65,8 @@ public:
 	dBodyID GetPhysicsBody();
 	void RegisterCollision(double depth);
 
+	friend GameWorld;
+
 };
 
 #endif

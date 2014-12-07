@@ -35,18 +35,6 @@ GameWorld::GameWorld(Game& game, std::string sceneName) :
 	m_meshes["RoadV2"] = CreatePlane(m_scene, "RoadV2", 10, 110, Ogre::ColourValue(0.5f, 0.5f, 0.5f));
 	m_meshes["RoadV3"] = CreatePlane(m_scene, "RoadV3", 10, 160, Ogre::ColourValue(0.5f, 0.5f, 0.5f));
 
-	// create a camera
-	Ogre::Camera *camera = m_scene->createCamera("PrimaryCamera");
-	camera->setNearClipDistance(2.0f);
-	camera->setFarClipDistance(1000.f);
-	Ogre::SceneNode *cameraNode = m_scene->getRootSceneNode()->createChildSceneNode("PrimaryCameraNode");
-	cameraNode->attachObject(camera);
-	m_cameras.push_back(Camera {camera, cameraNode});
-	game.SetCamera(camera);
-	cameraNode->setPosition(Ogre::Vector3(250, 500, 250));
-	//camera->lookAt(Ogre::Vector3(0, 0, 0));
-	camera->lookAt(Ogre::Vector3(145, 0, 145));
-
 	// create the ground
 	Ogre::Entity *ground = m_scene->createEntity(GetMesh("Ground"));
 	Ogre::SceneNode *groundNode = m_scene->getRootSceneNode()->createChildSceneNode();
@@ -57,7 +45,7 @@ GameWorld::GameWorld(Game& game, std::string sceneName) :
 	m_world = dWorldCreate();
 	m_space = dHashSpaceCreate(0);
 	m_group = dJointGroupCreate(0);
-	dWorldSetGravity(m_world, 0, -9.81f, 0);
+	dWorldSetGravity(m_world, 0, -10, 0);
 	dWorldSetCFM(m_world, 1e-5);
 	dCreatePlane(m_space, 0, 1, 0, 0);
 
@@ -93,6 +81,18 @@ GameWorld::GameWorld(Game& game, std::string sceneName) :
 			m_objects.push_back(GameObject(*this, *protos[name], x, y, z));
 		}
 	}
+
+	// create a camera
+	Ogre::Camera *camera = m_scene->createCamera("PrimaryCamera");
+	camera->setNearClipDistance(2.0f);
+	camera->setFarClipDistance(1000.f);
+	//Ogre::SceneNode *cameraNode = m_scene->getRootSceneNode()->createChildSceneNode("PrimaryCameraNode");
+	Ogre::SceneNode *cameraNode = m_objects.front().m_sceneNode->createChildSceneNode("PrimaryCameraNode");
+	cameraNode->attachObject(camera);
+	m_cameras.push_back(Camera {camera, cameraNode});
+	game.SetCamera(camera);
+	cameraNode->setPosition(Ogre::Vector3(0, 30, -50));
+	camera->lookAt(Ogre::Vector3(0, 10, 0));
 
 	// test code plz ignore
 	/*std::vector<WorldPos> path;
