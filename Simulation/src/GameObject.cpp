@@ -148,11 +148,15 @@ void GameObject::Update()
 	// here is where I'd pass the game state to an agent if we had one
 
 	// layout: turn, acceleration
-	Action a = {1, 1};	// dummy event, will use later
+	Action a = {0.2, 0.5};	// dummy event, will use later
+
+	const dReal *quat = dBodyGetQuaternion(m_body);
 
 	// do physics things
-	dBodyAddRelForce(m_body, 0, 0, a.m_accelerateMagnitude * m_maxForward);
-	dBodyAddTorque(m_body, 0, a.m_turnMagnitude * m_maxTurn, 0);
+	if (quat[1] < 0.05f) {
+		dBodyAddRelForce(m_body, 0, 0, a.m_accelerateMagnitude * m_maxForward);
+		dBodyAddTorque(m_body, 0, a.m_turnMagnitude * m_maxTurn, 0);
+	}
 
 	// reset collision accumulator
 	m_totalDamage += m_collisionAccum;
