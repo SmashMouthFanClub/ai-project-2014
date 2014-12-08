@@ -71,4 +71,7 @@ struct Action {
 	// can stop on a dime, cars don't.
 };
 
+bool operator==(const Action &act1, const Action &act2);
+bool operator<(const GameState &state1, const GameState &state2);
+
 #endif
