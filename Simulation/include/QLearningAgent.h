@@ -5,26 +5,25 @@
 #include <vector>
 #include "GameState.h"
 
-// Action reward pair
+// Action value pair
 struct AVPair {
      Action action;
      int value;
 };
 
-// Compare AV pairs based on their value
-class CompareAVPair {
-public:
-	bool operator()(AVPair  *av1, AVPair *av2)
-	{
-		return av1->value > av2->value;
-	}
-};
-
+// QLearning agent
 class QLearningAgent
 {
+     // The Id of the agent
      int m_id = 0;
+
+     // The learning rate
      int m_learn = 0;
+
+     // The discount rate
      int m_discount = 0;
+
+     // The qvalues
      std::map<GameState, std::vector<AVPair *> *> m_qvalues;
 	  
 public:

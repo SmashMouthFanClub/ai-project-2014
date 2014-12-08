@@ -3,6 +3,7 @@
 
 QLearningAgent::QLearningAgent(int id, int learn, int discount)
 {
+     // Set the member variables
      m_id = id;
      m_learn = learn;
      m_discount = discount;
@@ -10,6 +11,7 @@ QLearningAgent::QLearningAgent(int id, int learn, int discount)
 
 void QLearningAgent::update(GameState current, Action action, GameState next, int reward)
 {
+     // This function updates the QValues for the action that was just used
      std::vector<AVPair *> *pairs = m_qvalues[current];
      
      for (AVPair *pair : *pairs) {
@@ -22,6 +24,7 @@ void QLearningAgent::update(GameState current, Action action, GameState next, in
 
 Action QLearningAgent::getAction(GameState state)
 {
+     // This function returns the action with the highest value in a given state
      std::vector<AVPair *> *pairs = m_qvalues[state];
      int val = 0;
      Action ret;
@@ -38,6 +41,7 @@ Action QLearningAgent::getAction(GameState state)
 
 int QLearningAgent::getValue(GameState state)
 {
+     // This function returns the highest value for a given state
      std::vector<AVPair *> *pairs = m_qvalues[state];
      int ret = 0;
      
