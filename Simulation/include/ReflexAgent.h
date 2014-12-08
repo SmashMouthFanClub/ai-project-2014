@@ -15,7 +15,7 @@ class ReflexAgent
 public:
      ReflexAgent() = delete;
      ReflexAgent(int id);
-     ReflexAgent(const QLearningAgent& copy) = delete;
+     ReflexAgent(const ReflexAgent& copy) = delete;
 
      // Add a rule to the rule map (or replace a current rule)
      void addRule(GameState state, Action action);
