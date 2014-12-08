@@ -10,3 +10,9 @@ bool operator<(const GameState &state1, const GameState &state2)
      // This is useless since map order does not matter, but its needed
      return state1.m_damageSelfTotal < state2.m_damageSelfTotal;
 }
+
+GameState valueExtraction(GameState state)
+{
+     // return a reduced state so that they can better be compared
+     return state;
+}
