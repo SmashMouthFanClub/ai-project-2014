@@ -55,7 +55,7 @@ const ObjectPrototype Building4Prototype = {
 GameObject::GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, double y, double z, int id) :
 	m_meshName(proto.m_meshName), m_sceneEntity(nullptr), m_sceneNode(nullptr),	m_lockRotation(proto.m_lockRotation), m_isKinematic(proto.m_isKinematic),
 	m_maxTurn(proto.m_maxTurnAngle), m_maxForward(proto.m_maxForward), m_maxBackward(proto.m_maxBackward),
-	m_hitPoints(proto.m_maxHitPoints), m_collisionAccum(0), m_totalDamage(0), m_hasAgent(proto.m_hasAgent), m_gw(gw), m_id(id)
+	m_hitPoints(proto.m_maxHitPoints), m_collisionAccum(0), m_totalDamage(0), m_hasAgent(proto.m_hasAgent), m_gw(gw), m_id(id), m_oldGS(nullptr), m_newGS(nullptr)
 {
 	m_sceneEntity = gw.GetScene()->createEntity(gw.GetMesh(m_meshName));
 	m_sceneNode = gw.GetScene()->getRootSceneNode()->createChildSceneNode();
@@ -94,9 +94,18 @@ void GameObject::Update()
 		return;
 	}
 
+	// reorder the game states
+	if (m_oldGS != nullptr) {
+		delete m_oldGS;
+		m_oldGS = nullptr;
+	}
+
+	m_oldGS = m_newGS;
+	m_newGS = new GameState;
+
 	// construct the game state to pass to an agent
-	GameState gs;
-	GetGameState(gs);
+	GetGameState(*m_newGS);
+	m_newGS->discretize();
 
 	// get the agent for this object
 	QLearningAgent *agent = m_gw.m_game.GetAgent(m_id);
@@ -106,12 +115,6 @@ void GameObject::Update()
 		WorldPos curr = {a.x, a.z, 0};
 		m_gw.MakeMapPath(curr, m_pathToDest);
 	}
-
-	// things that we've hit
-	gs.m_damageSelfInstant = m_collisionAccum;
-	gs.m_damageSelfTotal = m_totalDamage;
-	gs.m_damageOthersInstant = 0; // yeah, not using this
-	gs.m_damageOthersTotal = 0; // ... or this
 
 	// here is where I'd pass the game state to an agent if we had one
 
@@ -142,7 +145,7 @@ void GameObject::Render()
 Ogre::Vector3 GameObject::GetLocation()
 {
 	const dReal *pos = dBodyGetPosition(m_body);
-	return Ogre::Vector3(pos[0], pos[1], pos[2]);
+	return Ogre::Vector3(pos[0], pos[2], pos[1]);
 }
 
 dBodyID GameObject::GetPhysicsBody()
@@ -199,6 +202,12 @@ void GameObject::GetGameState(GameState &gs)
 		gs.m_distanceFromDestination = Ogre::Math::Sqrt(Ogre::Math::Sqr(diffX) + Ogre::Math::Sqr(diffY));
 		gs.m_deviationAngle = Ogre::Math::ATan2(diffY, diffX).valueDegrees();
 	}
+
+	// things that we've hit
+	gs.m_damageSelfInstant = m_collisionAccum;
+	gs.m_damageSelfTotal = m_totalDamage;
+	gs.m_damageOthersInstant = 0; // yeah, not using this
+	gs.m_damageOthersTotal = 0; // ... or this
 }
 
 void GameObject::GetReward(GameState& g1, GameState& g2)

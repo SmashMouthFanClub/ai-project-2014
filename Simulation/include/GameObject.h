@@ -54,6 +54,9 @@ class GameObject
 	GameWorld& m_gw;
 	int m_id;
 
+	GameState *m_oldGS;
+	GameState *m_newGS;
+
 public:
 
 	GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, double y, double z, int id);

@@ -51,6 +51,9 @@ struct GameState {
 
 	// damage done to others in current episode
 	int m_damageOthersTotal;
+
+	void discretize();
+	void extractFeatures();
 };
 
 struct Action {
