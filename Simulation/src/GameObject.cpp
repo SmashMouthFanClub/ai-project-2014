@@ -145,7 +145,7 @@ void GameObject::Render()
 Ogre::Vector3 GameObject::GetLocation()
 {
 	const dReal *pos = dBodyGetPosition(m_body);
-	return Ogre::Vector3(pos[0], pos[2], pos[1]);
+	return Ogre::Vector3(pos[0], pos[1], pos[2]);
 }
 
 dBodyID GameObject::GetPhysicsBody()

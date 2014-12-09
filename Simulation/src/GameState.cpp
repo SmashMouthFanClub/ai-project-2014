@@ -26,7 +26,7 @@ double discretizeLogarithmic(double in)
 	in = trunc(in);
 
 	if (in < 1) {
-		in = 1;
+		in = abs(in);
 		sign = -1;
 	}
 
