@@ -5,6 +5,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <OGRE/Ogre.h>
+
 #include "GameState.h"
 #include "AStarMap.h"
 
@@ -160,30 +162,24 @@ double AStarMap::getDistanceFromPath(WorldPos pos) {
 	return minDist;
 }
 
-double LineSegmentDistance(WorldPos l1, WorldPos l2, WorldPos p) {
-	double lengthSquared = pow(l1.x - l2.x, 2) + pow(l1.y - l2.y, 2);
-	if (lengthSquared < 0.0001f) {
-		return sqrt(pow(l1.x - p.x, 2) + pow(l1.y - p.y, 2));
+double LineSegmentDistance(WorldPos l1, WorldPos l2, WorldPos p)
+{
+	Ogre::Vector2 a(p.x - l1.x, p.y - l1.y);
+	Ogre::Vector2 b(l2.x - l1.x, l2.y - p.y);
+	Ogre::Vector2 c(b);
+
+	c.normalise();
+
+	double scalarProjection = a.dotProduct(c);
+
+	if (scalarProjection < 0) {
+		return Ogre::Vector2(l1.x - p.x, l1.y - p.y).length();
+	} else if (scalarProjection > b.length()) {
+		return Ogre::Vector2(l2.x - p.x, l2.y - p.y).length();
+	} else {
+		Ogre::Radian theta = Ogre::Math::ACos(scalarProjection / a.length());
+		return scalarProjection * Ogre::Math::Tan(theta);
 	}
-
-	WorldPos x1 = {p.x - l1.x, p.y - l1.y, 0};
-	WorldPos x2 = {l2.x - l1.x, l2.y - l1.y, 0};
-	double scalarProjection = ((x1.x * x2.x) + (x1.y * x2.y)) / lengthSquared;
-
-	if (scalarProjection < 0.0f) {
-		return sqrt(pow(l1.x - p.x, 2) + pow(l1.y - p.y, 2));
-	}
-
-	if (scalarProjection > 1.0f) {
-		return sqrt(pow(l2.x - p.x, 2) + pow(l2.y - p.y, 2));
-	}
-
-	WorldPos vectorProjection = {
-		l1.x + scalarProjection * l2.x - scalarProjection * l1.x,
-		l1.y + scalarProjection * l2.y - scalarProjection * l1.y,
-		0
-	};
-	return sqrt(pow(vectorProjection.x - p.x, 2) - pow(vectorProjection.y - p.y, 2));
 }
 
 double AStarMap::getDistance(WorldPos from, WorldPos to) {
