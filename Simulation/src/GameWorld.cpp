@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cstdlib>
 
 #include "Game.h"
 #include "GameWorld.h"
@@ -60,6 +61,7 @@ GameWorld::GameWorld(Game& game, std::string sceneName) :
 
 	// load game objects
 	std::ifstream inFile("objects.txt");
+	int id = 0;
 	while (!inFile.eof()) {
 		std::string line;
 		std::getline(inFile, line);
@@ -78,7 +80,8 @@ GameWorld::GameWorld(Game& game, std::string sceneName) :
 		if (isObject == 0) {
 			m_statics.push_back(StaticMesh(*this, name, Ogre::Vector3(x, y, z)));
 		} else {
-			m_objects.push_back(GameObject(*this, *protos[name], x, y, z));
+			m_objects.push_back(GameObject(*this, *protos[name], x, y, z, id));
+			++id;
 		}
 	}
 
@@ -95,10 +98,10 @@ GameWorld::GameWorld(Game& game, std::string sceneName) :
 	camera->lookAt(Ogre::Vector3(0, 10, 0));
 
 	// test code plz ignore
-	std::vector<WorldPos> path;
+	/*std::vector<WorldPos> path;
 	WorldPos w1 = {0, 0, 0};
 	WorldPos w2 = {300, 300, 0};
-	m_map.makePath(w1, w2, path);
+	m_map.makePath(w1, w2, path);*/
 }
 
 GameWorld::~GameWorld()
@@ -130,8 +133,29 @@ bool GameWorld::Update()
 	return true;
 }
 
-AStarMap& GameWorld::GetMap() {
+AStarMap& GameWorld::GetMap()
+{
 	return m_map;
+}
+
+void GameWorld::MakeMapPath(WorldPos start, std::vector<WorldPos>& outList)
+{
+	int len = m_map.getSize();
+	int idx1 = m_map.getClosestNode(start);
+	int idx2 = rand() % (len - 1);
+
+	if (idx2 >= idx1) {
+		idx2 += 1;
+	}
+
+	WorldPos p1, p2;
+	m_map.getNode(idx1, p1);
+	m_map.getNode(idx2, p2);
+
+	std::cout << "(" << p1.x << ", " << p1.y << ")" << std::endl;
+	std::cout << "(" << p2.x << ", " << p2.y << ")" << std::endl;
+
+	m_map.makePath(p1, p2, outList);
 }
 
 void GameWorld::NearCollideCallback(void *data, dGeomID o1, dGeomID o2)

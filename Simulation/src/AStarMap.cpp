@@ -56,15 +56,6 @@ AStarMap::AStarMap(const char *fileName)
 		m_adjacents[n1].push_back(w2);
 		m_adjacents[n2].push_back(w1);
 	}
-
-	for (auto& i : m_adjacents) {
-		WorldPos w = m_nodes[i.first];
-		std::cout << "(" << w.x << ", " << w.y << "): ";
-		for (auto& j : i.second) {
-			std::cout << "(" << j.x << ", " << j.y << "); ";
-		}
-		std::cout << std::endl << std::endl;
-	}
 }
 
 void AStarMap::makePath(WorldPos startPos, WorldPos endPos, std::vector<WorldPos> &outList) {
@@ -214,6 +205,23 @@ int AStarMap::getNodeIndex(WorldPos node) {
      return -1;
 }
 
+int AStarMap::getClosestNode(WorldPos searchPoint)
+{
+	double minDist = -1;
+	int minNode = -1;
+	int idx = 0;
+
+	for (auto it = m_nodes.begin(); it != m_nodes.end(); ++it, ++idx) {
+		double dist = sqrt(pow(it->x - searchPoint.x, 2) + pow(it->y - searchPoint.y, 2));
+		if (minDist < 0 || dist < minDist) {
+			minDist = dist;
+			minNode = idx;
+		}
+	}
+
+	return minNode;
+}
+
 void AStarMap::generatePath(Node *node, std::vector<WorldPos> &outList) {
      // Tnis function converts the Node linked list into a vector, and reverses it
      // so that the startPos is at the first item and endPos is the last item.
@@ -224,4 +232,20 @@ void AStarMap::generatePath(Node *node, std::vector<WorldPos> &outList) {
      
      // it's easier to work with this in reverse
      //std::reverse(outList.begin(), outList.end());
+}
+
+int AStarMap::getSize()
+{
+	return (int) m_nodes.size();
+}
+
+void AStarMap::getNode(int index, WorldPos& pos)
+{
+	if (index < 0 && index >= m_nodes.size()) {
+		return;
+	}
+
+	pos.x = m_nodes[index].x;
+	pos.y = m_nodes[index].y;
+	pos.angle = 0;
 }

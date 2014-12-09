@@ -47,6 +47,7 @@ public:
 	bool Update();
 
 	AStarMap& GetMap();
+	void MakeMapPath(WorldPos start, std::vector<WorldPos>& outList);
 
 	Ogre::SceneManager *GetScene();
 	Ogre::MeshPtr GetMesh(std::string meshName);

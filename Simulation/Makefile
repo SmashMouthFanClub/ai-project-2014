@@ -2,7 +2,7 @@ CC = g++ -std=c++11 -I include
 CFLAGS = -Wall -g
 LINK = -lOgreMain -lOIS -lboost_system -lode -lpthread
 
-all: main.o Game.o GameWorld.o GameObject.o AStarMap.o StaticMesh.o QLearningAgent.o GameState.o ReflexAgent.o
+all: main.o Game.o GameWorld.o GameObject.o AStarMap.o StaticMesh.o QLearningAgent.o  QLearningManager.o GameState.o ReflexAgent.o
 	$(CC) $(CFLAGS) bin/*.o -o bin/Simulation $(LINK)
 
 main.o: src/main.cpp include/Game.h
@@ -22,6 +22,9 @@ AStarMap.o: src/AStarMap.cpp include/AStarMap.h include/GameState.h
 
 QLearningAgent.o: src/QLearningAgent.cpp include/QLearningAgent.h include/GameState.h
 	$(CC) $(CFLAGS) -c src/QLearningAgent.cpp -o bin/QLearningAgent.o
+
+QLearningManager.o: src/QLearningManager.cpp include/QLearningManager.h
+	$(CC) $(CFLAGS) -c src/QLearningManager.cpp -o bin/QLearningManager.o
 
 ReflexAgent.o: src/ReflexAgent.cpp include/ReflexAgent.h include/GameState.h
 	$(CC) $(CFLAGS) -c src/ReflexAgent.cpp -o bin/ReflexAgent.o

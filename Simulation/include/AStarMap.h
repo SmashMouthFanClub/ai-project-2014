@@ -37,7 +37,10 @@ public:
 	double getDistanceFromPath(WorldPos pos);
 	double getDistance(WorldPos from, WorldPos to);
 	int getNodeIndex(WorldPos node);
+	int getClosestNode(WorldPos searchPoint);
 	void generatePath(Node *node, std::vector<WorldPos> &outList);
+	int getSize();
+	void getNode(int index, WorldPos& pos);
 };
 
 #endif

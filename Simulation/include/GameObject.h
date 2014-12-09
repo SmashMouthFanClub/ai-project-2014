@@ -52,10 +52,14 @@ class GameObject
 	bool m_hasAgent;
 	std::vector<WorldPos> m_pathToDest;
 	GameWorld& m_gw;
+	int m_id;
+
+	GameState *m_oldGS;
+	GameState *m_newGS;
 
 public:
 
-	GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, double y, double z);
+	GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, double y, double z, int id);
 
 	void Update();
 	void Render();
@@ -64,6 +68,11 @@ public:
 
 	dBodyID GetPhysicsBody();
 	void RegisterCollision(double depth);
+
+private:
+
+	void GetGameState(GameState &gs);
+	void GetReward(GameState& g1, GameState& g2);
 
 	friend GameWorld;
 
