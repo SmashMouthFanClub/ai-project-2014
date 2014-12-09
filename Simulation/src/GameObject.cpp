@@ -160,6 +160,9 @@ void GameObject::RegisterCollision(double depth)
 
 void GameObject::GetGameState(GameState &gs)
 {
+	const dReal *velocity = dBodyGetLinearVel(m_body);
+	gs.m_speed = sqrt(pow(velocity[0], 2) + pow(velocity[2], 2));
+
 	// create vectors of differences between positions
 	gs.m_nearbyMoving = std::vector<WorldPos>();
 	gs.m_nearbyStatic = std::vector<WorldPos>();
@@ -181,6 +184,7 @@ void GameObject::GetGameState(GameState &gs)
 	// this is a gross O(n) lookup of distance from a path
 	WorldPos p = {n.x, n.z, 0};
 	gs.m_distanceFromCenter = m_gw.m_map.getDistanceFromPath(p);
+	std::cout << gs.m_distanceFromCenter << std::endl;
 
 	// calculate the distance and angle to the nearest destination
 	// this also removes destinations that you're very close to

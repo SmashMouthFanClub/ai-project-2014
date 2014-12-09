@@ -183,6 +183,7 @@ double LineSegmentDistance(WorldPos l1, WorldPos l2, WorldPos p) {
 		l1.y + scalarProjection * l2.y - scalarProjection * l1.y,
 		0
 	};
+
 	return sqrt(pow(vectorProjection.x - p.x, 2) - pow(vectorProjection.y - p.y, 2));
 }
 
