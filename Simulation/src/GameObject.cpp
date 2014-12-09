@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "GameState.h"
 #include "GameWorld.h"
+#include "Game.h"
 
 const ObjectPrototype CarPrototype = {
 	"CarBox",
@@ -51,10 +52,10 @@ const ObjectPrototype Building4Prototype = {
 	false
 };
 
-GameObject::GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, double y, double z) :
+GameObject::GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, double y, double z, int id) :
 	m_meshName(proto.m_meshName), m_sceneEntity(nullptr), m_sceneNode(nullptr),	m_lockRotation(proto.m_lockRotation), m_isKinematic(proto.m_isKinematic),
 	m_maxTurn(proto.m_maxTurnAngle), m_maxForward(proto.m_maxForward), m_maxBackward(proto.m_maxBackward),
-	m_hitPoints(proto.m_maxHitPoints), m_collisionAccum(0), m_totalDamage(0), m_hasAgent(proto.m_hasAgent), m_gw(gw)
+	m_hitPoints(proto.m_maxHitPoints), m_collisionAccum(0), m_totalDamage(0), m_hasAgent(proto.m_hasAgent), m_gw(gw), m_id(id)
 {
 	m_sceneEntity = gw.GetScene()->createEntity(gw.GetMesh(m_meshName));
 	m_sceneNode = gw.GetScene()->getRootSceneNode()->createChildSceneNode();
@@ -95,48 +96,15 @@ void GameObject::Update()
 
 	// construct the game state to pass to an agent
 	GameState gs;
+	GetGameState(gs);
 
-	// create vectors of differences between positions
-	gs.m_nearbyMoving = std::vector<WorldPos>();
-	gs.m_nearbyStatic = std::vector<WorldPos>();
-	Ogre::Vector3 n = GetLocation();
-	for (auto& i : m_gw.m_objects) {
-		Ogre::Vector3 m = i.GetLocation();
+	// get the agent for this object
+	QLearningAgent *agent = m_gw.m_game.GetAgent(m_id);
 
-		double diffX = m.x - n.x;
-		double diffY = m.z - n.z;
-		double theta = Ogre::Math::ATan2(diffY, diffX).valueDegrees();
-
-		if (i.m_isKinematic) {
-			gs.m_nearbyStatic.push_back(WorldPos {diffX, diffY, theta});
-		} else {
-			gs.m_nearbyMoving.push_back(WorldPos {diffX, diffY, theta});
-		}
-	}
-
-	// this is a gross O(n) lookup of distance from a path
-	WorldPos p = {n.x, n.z, 0};
-	gs.m_distanceFromCenter = m_gw.m_map.getDistanceFromPath(p);
-
-	// calculate the distance and angle to the nearest destination
-	// this also removes destinations that you're very close to
-	gs.m_distanceFromDestination = 0;
-	gs.m_deviationAngle = 0;
-	bool beginPopping = false;
-	while ((m_pathToDest.size() != 0) && (gs.m_distanceFromDestination < 0.5f)) {
-		if (beginPopping) {
-			m_pathToDest.pop_back();
-		} else {
-			beginPopping = true;
-		}
-
-		WorldPos p = m_pathToDest.back();
-
-		double diffX = p.x - n.x;
-		double diffY = p.y - n.z;
-
-		gs.m_distanceFromDestination = Ogre::Math::Sqrt(Ogre::Math::Sqr(diffX) + Ogre::Math::Sqr(diffY));
-		gs.m_deviationAngle = Ogre::Math::ATan2(diffY, diffX).valueDegrees();
+	if (m_pathToDest.size() == 0) {
+		Ogre::Vector3 a = GetLocation();
+		WorldPos curr = {a.x, a.z, 0};
+		m_gw.MakeMapPath(curr, m_pathToDest);
 	}
 
 	// things that we've hit
@@ -185,4 +153,55 @@ dBodyID GameObject::GetPhysicsBody()
 void GameObject::RegisterCollision(double depth)
 {
 	m_collisionAccum += depth;
+}
+
+void GameObject::GetGameState(GameState &gs)
+{
+	// create vectors of differences between positions
+	gs.m_nearbyMoving = std::vector<WorldPos>();
+	gs.m_nearbyStatic = std::vector<WorldPos>();
+	Ogre::Vector3 n = GetLocation();
+	for (auto& i : m_gw.m_objects) {
+		Ogre::Vector3 m = i.GetLocation();
+
+		double diffX = m.x - n.x;
+		double diffY = m.z - n.z;
+		double theta = Ogre::Math::ATan2(diffY, diffX).valueDegrees();
+
+		if (i.m_isKinematic) {
+			gs.m_nearbyStatic.push_back(WorldPos {diffX, diffY, theta});
+		} else {
+			gs.m_nearbyMoving.push_back(WorldPos {diffX, diffY, theta});
+		}
+	}
+
+	// this is a gross O(n) lookup of distance from a path
+	WorldPos p = {n.x, n.z, 0};
+	gs.m_distanceFromCenter = m_gw.m_map.getDistanceFromPath(p);
+
+	// calculate the distance and angle to the nearest destination
+	// this also removes destinations that you're very close to
+	gs.m_distanceFromDestination = 0;
+	gs.m_deviationAngle = 0;
+	bool beginPopping = false;
+	while ((m_pathToDest.size() != 0) && (gs.m_distanceFromDestination < 2.f)) {
+		if (beginPopping) {
+			m_pathToDest.pop_back();
+		} else {
+			beginPopping = true;
+		}
+
+		WorldPos p = m_pathToDest.back();
+
+		double diffX = p.x - n.x;
+		double diffY = p.y - n.z;
+
+		gs.m_distanceFromDestination = Ogre::Math::Sqrt(Ogre::Math::Sqr(diffX) + Ogre::Math::Sqr(diffY));
+		gs.m_deviationAngle = Ogre::Math::ATan2(diffY, diffX).valueDegrees();
+	}
+}
+
+void GameObject::GetReward(GameState& g1, GameState& g2)
+{
+
 }

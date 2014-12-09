@@ -87,6 +87,10 @@ void Game::Reset()
 	m_gw = std::unique_ptr<GameWorld>(new GameWorld(*this, "GameWorld"));
 }
 
+QLearningAgent *Game::GetAgent(int id) {
+	return m_manager.GetAgent(id);
+}
+
 int Game::GetViewHeight()
 {
 	if (m_viewport != nullptr) {
