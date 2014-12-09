@@ -53,7 +53,7 @@ struct GameState {
 	int m_damageOthersTotal;
 
 	void discretize();
-	void extractFeatures();
+     void extractFeatures(std::vector<double> &out);
 };
 
 struct Action {
@@ -76,5 +76,4 @@ struct Action {
 
 bool operator==(const Action &act1, const Action &act2);
 bool operator<(const GameState &state1, const GameState &state2);
-GameState valueExtraction(GameState state);
 #endif

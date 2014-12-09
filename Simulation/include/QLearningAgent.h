@@ -18,22 +18,30 @@ class QLearningAgent
      int m_id = 0;
 
      // The learning rate
-     int m_learn = 0;
+     double m_learn = 0;
 
      // The discount rate
-     int m_discount = 0;
+     double m_discount = 0;
+
+     // The exploration rate
+     double m_explore = 0;
+
+     // the weights for feature extraction
+     double *m_weights = 0;
 
      // The qvalues
-     std::map<GameState, std::vector<AVPair *> *> m_qvalues;
+     std::map<int, std::vector<AVPair *> *> m_qvalues;
 	  
 public:
      QLearningAgent() = delete;
-     QLearningAgent(int id, int learn, int discount);
+     QLearningAgent(double id, double learn, double discount, double explore, double *m_weights);
      QLearningAgent(const QLearningAgent& copy) = delete;
-
+     ~QLearningAgent();
+     
      void update(GameState current, Action action, GameState next, int reward);
      Action getAction(GameState state);
      int getValue(GameState state);
+     double getExtracted(GameState state);
 };
 
 #endif
