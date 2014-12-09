@@ -184,7 +184,6 @@ void GameObject::GetGameState(GameState &gs)
 	// this is a gross O(n) lookup of distance from a path
 	WorldPos p = {n.x, n.z, 0};
 	gs.m_distanceFromCenter = m_gw.m_map.getDistanceFromPath(p);
-	std::cout << gs.m_distanceFromCenter << std::endl;
 
 	// calculate the distance and angle to the nearest destination
 	// this also removes destinations that you're very close to
