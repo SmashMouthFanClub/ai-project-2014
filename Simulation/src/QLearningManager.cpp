@@ -13,11 +13,11 @@ QLearningAgent *QLearningManager::GetAgent(int id)
      double *weights = new double[4];
      weights[0] = 0.0; // closest object
      weights[1] = 0.0; // dest/speed or speed/dest
-     weights[2] = 0.5; // distance to road
-     weights[3] = 0.5; // deviation angle
+     weights[2] = 0.0; // distance to road
+     weights[3] = 0.0; // deviation angle
      
 	if (m_agents.count(id) == 0) {
-	     m_agents[id] = new QLearningAgent(id, 0.5, 0.9, 0.1, weights);
+	     m_agents[id] = new QLearningAgent(id, 0.5, 0.5, 0.1, weights);
 	}
 
 	return m_agents[id];
