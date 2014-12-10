@@ -19,6 +19,7 @@ class Game
 
 	// other render stuff
 	int m_framecount;
+	int m_episode;
 
 	// AI stuff
 	QLearningManager m_manager;

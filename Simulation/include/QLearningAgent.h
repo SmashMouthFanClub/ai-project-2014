@@ -43,6 +43,7 @@ public:
      int getValue(GameState state);
      int getExtracted(GameState state);
      double truncate(double in);
+     void setExploration(double explore);
 };
 
 #endif

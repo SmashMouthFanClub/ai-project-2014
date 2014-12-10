@@ -113,3 +113,7 @@ int QLearningAgent::getExtracted(GameState state)
 double QLearningAgent::truncate(double in) {
      return ((int) (in * 100)) / 100.d;
 }
+
+void QLearningAgent::setExploration(double explore) {
+     m_explore = explore;
+}

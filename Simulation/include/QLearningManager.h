@@ -14,6 +14,7 @@ public:
 	~QLearningManager();
 
 	QLearningAgent *GetAgent(int id);
+	void SetExplore(double explore);
 
 };
 

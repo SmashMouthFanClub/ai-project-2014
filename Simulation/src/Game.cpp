@@ -3,8 +3,10 @@
 #include <ode/ode.h>
 #include "Game.h"
 
+const int TRAIN = 5;
+
 Game::Game(int w, int h) :
-	m_window(nullptr), m_viewport(nullptr), m_framecount(0)
+	m_window(nullptr), m_viewport(nullptr), m_framecount(0), m_episode(0)
 {
 	// create OGRE root object
 	m_root = std::auto_ptr<Ogre::Root>(new Ogre::Root("plugins.cfg", "", "logs"));
@@ -30,7 +32,7 @@ Game::Game(int w, int h) :
 	m_window->setActive(true);
 	m_window->setAutoUpdated(false);
 
-	m_gw = std::unique_ptr<GameWorld>(new GameWorld(*this, "GameWorld"));
+	m_gw = std::unique_ptr<GameWorld>(new GameWorld(*this, "GameWorld", true));
 }
 
 Game::~Game()
@@ -52,10 +54,12 @@ bool Game::Tick()
 		m_framecount = 0;
 	}
 
-	m_window->update(true);
-	//m_window->swapBuffers();
+	if (m_episode > TRAIN) {
+		m_window->update(true);
+		//m_window->swapBuffers();
 
-	m_root->renderOneFrame();
+		m_root->renderOneFrame();
+	}
 
 	Ogre::WindowEventUtilities::messagePump();
 	return !m_window->isClosed();
@@ -83,8 +87,23 @@ int Game::GetViewWidth()
 
 void Game::Reset()
 {
+	++m_episode;
+	if (m_episode % 5 != 0) {
+		m_manager.SetExplore(1.0f / double(m_episode));
+	} else {
+		m_manager.SetExplore(0.8f);
+	}
+
 	delete m_gw.release();
-	m_gw = std::unique_ptr<GameWorld>(new GameWorld(*this, "GameWorld"));
+
+	bool headless = (m_episode < TRAIN);
+	if (headless) {
+		std::cout << "TRAINING: " << m_episode << std::endl;
+	} else {
+		std::cout << "TESTING: " << m_episode << std::endl;
+	}
+
+	m_gw = std::unique_ptr<GameWorld>(new GameWorld(*this, "GameWorld", headless));
 }
 
 QLearningAgent *Game::GetAgent(int id) {

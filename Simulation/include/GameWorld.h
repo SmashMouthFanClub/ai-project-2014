@@ -39,9 +39,11 @@ class GameWorld
 	dJointGroupID m_group;
 	std::map<dBodyID, GameObject*> m_bodyToObject;
 
+	bool m_headless;
+
 public:
 
-	GameWorld(Game& game, std::string sceneName);
+	GameWorld(Game& game, std::string sceneName, bool headless);
 	~GameWorld();
 
 	bool Update();
