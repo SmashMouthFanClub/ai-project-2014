@@ -33,7 +33,7 @@ double discretizeLogarithmic(double in)
 
 	double discrete = trunc(exp2(trunc(log2(in))));
 	discrete *= sign;
-	std::cout << "LOG: " << in << " -> " << discrete << std::endl;
+	//std::cout << "LOG: " << in << " -> " << discrete << std::endl;
 	return discrete;
 }
 
@@ -58,6 +58,8 @@ void GameState::discretize()
 	// non discretized features:
 	// * m_damageOthersInstant
 	// * m_damageOthersTotal
+
+	m_speed = discretizeLinear(m_speed, 10);
 
 	for (auto& i : m_nearbyMoving) {
 		i.x = discretizeLogarithmic(i.x);

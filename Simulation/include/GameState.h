@@ -13,6 +13,9 @@ struct WorldPos {
 };
 
 struct GameState {
+	// speed of car
+	double m_speed;
+
 	// vector of all nearby moving entities
 	// all members are relative to the car
 	// x = abs(self.x - other.x)

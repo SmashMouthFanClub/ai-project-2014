@@ -160,6 +160,9 @@ void GameObject::RegisterCollision(double depth)
 
 void GameObject::GetGameState(GameState &gs)
 {
+	const dReal *velocity = dBodyGetLinearVel(m_body);
+	gs.m_speed = sqrt(pow(velocity[0], 2) + pow(velocity[2], 2));
+
 	// create vectors of differences between positions
 	gs.m_nearbyMoving = std::vector<WorldPos>();
 	gs.m_nearbyStatic = std::vector<WorldPos>();
