@@ -140,7 +140,12 @@ void GameObject::Update()
 
 	// do physics things
 	if (quat[1] < 0.05f) {
-		dBodyAddRelForce(m_body, 0, 0, m_lastAction.m_accelerateMagnitude * m_maxForward);
+		dBodySetForce(m_body, 0, 0, 0);
+		if (m_lastAction.m_accelerateMagnitude > 0) {
+			dBodyAddRelForce(m_body, 0, 0, m_lastAction.m_accelerateMagnitude * m_maxForward);
+		} else {
+			dBodyAddRelForce(m_body, 0, 0, m_lastAction.m_accelerateMagnitude * m_maxBackward);
+		}
 		dBodyAddTorque(m_body, 0, m_lastAction.m_turnMagnitude * m_maxTurn, 0);
 	}
 
