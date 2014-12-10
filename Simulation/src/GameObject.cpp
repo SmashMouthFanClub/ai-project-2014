@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include "GameObject.h"
 #include "GameState.h"
@@ -90,6 +91,7 @@ GameObject::GameObject(GameWorld& gw, const ObjectPrototype& proto, double x, do
 
 void GameObject::Update()
 {
+     double reward = 0;
 	if (!m_hasAgent) {
 		return;
 	}
@@ -105,10 +107,20 @@ void GameObject::Update()
 
 	// construct the game state to pass to an agent
 	GetGameState(*m_newGS);
+
+	reward = 1 / std::max(1.d, m_newGS->m_distanceFromDestination);
+	     
+	// Discretize after reward calculation
 	m_newGS->discretize();
+
 
 	// get the agent for this object
 	QLearningAgent *agent = m_gw.m_game.GetAgent(m_id);
+
+	// Update the behaviors based on the last action
+	if (m_oldGS != 0) {
+	     agent->update(*m_oldGS, m_lastAction, *m_newGS, reward);
+	}
 
 	if (m_pathToDest.size() == 0) {
 		Ogre::Vector3 a = GetLocation();
@@ -116,17 +128,20 @@ void GameObject::Update()
 		m_gw.MakeMapPath(curr, m_pathToDest);
 	}
 
+
 	// here is where I'd pass the game state to an agent if we had one
 
 	// layout: turn, acceleration
-	Action a = {0.2, 0.5};	// dummy event, will use later
+	m_lastAction = agent->getAction(*m_newGS);
+
+	std::cout << "Action: " << m_lastAction.m_accelerateMagnitude << ", " << m_lastAction.m_turnMagnitude << std::endl;
 
 	const dReal *quat = dBodyGetQuaternion(m_body);
 
 	// do physics things
 	if (quat[1] < 0.05f) {
-		dBodyAddRelForce(m_body, 0, 0, a.m_accelerateMagnitude * m_maxForward);
-		dBodyAddTorque(m_body, 0, a.m_turnMagnitude * m_maxTurn, 0);
+		dBodyAddRelForce(m_body, 0, 0, m_lastAction.m_accelerateMagnitude * m_maxForward);
+		dBodyAddTorque(m_body, 0, m_lastAction.m_turnMagnitude * m_maxTurn, 0);
 	}
 
 	// reset collision accumulator

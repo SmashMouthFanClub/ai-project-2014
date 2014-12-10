@@ -41,7 +41,8 @@ public:
      void update(GameState current, Action action, GameState next, int reward);
      Action getAction(GameState state);
      int getValue(GameState state);
-     double getExtracted(GameState state);
+     int getExtracted(GameState state);
+     double truncate(double in);
 };
 
 #endif
