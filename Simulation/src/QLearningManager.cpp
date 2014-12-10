@@ -22,3 +22,10 @@ QLearningAgent *QLearningManager::GetAgent(int id)
 
 	return m_agents[id];
 }
+
+void QLearningManager::SetExplore(double explore)
+{
+	for (auto& i : m_agents) {
+		i.second->setExploration(explore);
+	}
+}
