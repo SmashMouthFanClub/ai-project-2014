@@ -85,7 +85,6 @@ void GameState::extractFeatures(std::vector<double> &ret)
 {
      double closest = 0;
      double dist = 0;
-     double m_carVelocity = 0;
      
      for (auto &cur : m_nearbyMoving) {
 	  if (cur.angle < 25 && cur.angle > -25) {
@@ -108,5 +107,7 @@ void GameState::extractFeatures(std::vector<double> &ret)
      }
 
      ret.push_back(closest);
-     ret.push_back(std::min(std::max(m_distanceFromDestination, 1.d) / std::max(m_carVelocity, 1.d), std::max(m_carVelocity, 1.d) / std::max(m_distanceFromDestination, 1.d)));
+     ret.push_back(std::min(std::max(m_distanceFromDestination, 1.d) / std::max(m_speed, 1.d), std::max(m_speed, 1.d) / std::max(m_distanceFromDestination, 1.d)));
+     ret.push_back(m_distanceFromCenter); // This is a placeholder
+     ret.push_back(m_deviationAngle); // This is a placeholder
 }

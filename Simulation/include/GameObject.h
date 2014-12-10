@@ -56,6 +56,7 @@ class GameObject
 
 	GameState *m_oldGS;
 	GameState *m_newGS;
+     Action m_lastAction;
 
 public:
 
