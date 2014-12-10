@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include "GameState.h"
@@ -80,13 +81,32 @@ void GameState::discretize()
 	m_damageSelfTotal = discretizeLinear(m_damageSelfTotal, 10);
 }
 
-void GameState::extractFeatures()
+void GameState::extractFeatures(std::vector<double> &ret)
 {
+     double closest = 0;
+     double dist = 0;
+     double m_carVelocity = 0;
+     
+     for (auto &cur : m_nearbyMoving) {
+	  if (cur.angle < 25 && cur.angle > -25) {
+	       dist = sqrt(pow(cur.x, 2) + pow(cur.y, 2));
 
-}
+	       if (dist < closest) {
+		    closest = dist;
+	       }
+	  }
+     }
 
-GameState valueExtraction(GameState state)
-{
-     // return a reduced state so that they can better be compared
-     return state;
+     for (auto &cur : m_nearbyStatic) {
+	  if (cur.angle < 25 && cur.angle > -25) {
+	       dist = sqrt(pow(cur.x, 2) + pow(cur.y, 2));
+
+	       if (dist < closest) {
+		    closest = dist;
+	       }
+	  }
+     }
+
+     ret.push_back(closest);
+     ret.push_back(std::min(std::max(m_distanceFromDestination, 1.d) / std::max(m_carVelocity, 1.d), std::max(m_carVelocity, 1.d) / std::max(m_distanceFromDestination, 1.d)));
 }
